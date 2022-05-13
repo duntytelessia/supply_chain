@@ -1,0 +1,52 @@
+{% extends 'data/base_generic.html' %}
+
+{% block content %}
+<h1> Welcome to the Production Chain Website ! </h1>
+
+<h2>  {{ all }} actors in this simulation </h2>
+
+<h3> Suppliers : ({{ s_count }})</h3>
+
+<ul>
+{% for user in suppliers %}
+   <li><p> {{ user }} </p></li>
+{% endfor %}
+</ul>
+
+<h3> Factories :({{ f_count }}) </h3>
+
+<ul>
+{% for user in factories %}
+   <li><p> {{ user }} </p></li>
+{% endfor %}
+</ul>
+
+<h3> Warehouses : ({{ w_count }})</h3>
+
+<ul>
+{% for user in warehouses %}
+   <li><p> {{ user }} </p></li>
+{% endfor %}
+</ul>
+
+<h3> Logistics : ({{ l_count }})</h3>
+
+<ul>
+{% for user in logistics %}
+   <li><p> {{ user }} </p></li>
+{% endfor %}
+</ul>
+
+<h3> Distributors : ({{ d_count }})</h3>
+
+<ul>
+{% for user in distributors %}
+   <li><p> {{ user }} </p></li>
+{% endfor %}
+</ul>
+
+<p> <a href="register/"> Create new account</a></p>
+
+{% endblock %}
+
+

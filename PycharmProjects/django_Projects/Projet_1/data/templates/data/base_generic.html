@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% block title %}{% endblock %}
+  <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Add additional CSS in static file -->
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-2">
+          {% block sidebar %}
+           <ul class="sidebar-nav">
+                <p> <a href="/">Main Page</a> </p>
+                {% if user.is_authenticated %}
+                    <p> Logged as {{ user.username }}</p>
+                    <p> <a href="/accounts/logout"> Logout </a> </p>
+                    <p> <a href="/profile/"> Profile </a> </p>
+                {% else %}
+                    <p> <a href="/accounts/login"> Login </a> </p>
+                {% endif %}
+
+                {% if user.is_superuser %}
+                    <p> <a href="/controltower"> access to control tower interface</a></p>
+               {% endif %}
+           </ul>
+          {% endblock %}
+      </div>
+         <div class="col-sm-10 ">
+             {% block content %}
+             {% endblock %}
+         </div>
+    </div>
+  </div>
+</body>
+</html>

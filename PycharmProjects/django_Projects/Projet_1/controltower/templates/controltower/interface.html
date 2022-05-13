@@ -1,0 +1,26 @@
+{% extends 'data/base_generic.html' %}
+
+{% block content %}
+    <h1> Control Tower Interface</h1>
+    <h2> All users :</h2>
+
+    <table>
+        <tr>
+            <td> name </td>
+            <td> <em> Actor Category </em> </td>
+            <td> Change actor category </td>
+            <td> Validate </td>
+            <td>  </td>
+        </tr>
+    {% for user in all_users %}
+        <tr>
+            <td> <p> {{ user }} </p> </td>
+            <td> {% if user.is_superuser %} <mark> admin </mark>
+                 {% else %} <em> {{ user.groups.all.0 }} </em> {% endif %} </td>
+            <td> {% if not user.is_superuser %} <p> <a href="cg/{{user}}"> change </a> </p> {% endif %} </td>
+            <td>  </td>
+            <td> {% if not user.is_superuser %} <a href="del/{{user}}"> delete user </a> {% endif %} </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

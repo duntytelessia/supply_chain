@@ -1,0 +1,36 @@
+{% extends 'data/base_generic.html' %}
+
+{% block title %}Profile Page{% endblock title %}
+{% block content %}
+    <div class="row my-3 p-3">
+        <h1>This is the profile page for {{ user }}</h1>
+
+        {% if user.is_superuser %}
+            <h2> You participate in this simulation as admin</h2>
+        {% else %}
+            {% if not has_group %}
+                <h2> You do not participate in this simulation</h2>
+                Wait for admin to add you
+            {% else %}
+                <h2> You participate in this simulation as {{ user.groups.all.0 }}</h2>
+            {% endif %}
+        {% endif %}
+    </div>
+    <h3> First Name : </h3>  <p>{{user.first_name }} </p>
+
+    <h3> Last Name : </h3>  <p>{{user.last_name }} </p>
+
+    <h3> Email : </h3>  <p>{{user.email }} </p>
+
+    {% if user.is_superuser %}
+
+        <p> <a href="/controltower"> access to control tower interface</a></p>
+
+    {% else %}
+
+        <h3> Actor Category : </h3>  <p>{{ user.groups.all.0 }} </p>
+
+    {% endif %}
+
+<p> <a href="/modify"> Change information </a></p>
+{% endblock content %}
