@@ -5,10 +5,18 @@
 
 <h2>  {{ all }} actors in this simulation </h2>
 
-<h3> Suppliers : ({{ s_count }})</h3>
+<h3> Suppliers A : ({{ s_a_count }})</h3>
 
 <ul>
-{% for user in suppliers %}
+{% for user in suppliers_a %}
+   <li><p> {{ user }} </p></li>
+{% endfor %}
+</ul>
+
+<h3> Suppliers B : ({{ s_b_count }})</h3>
+
+<ul>
+{% for user in suppliers_b %}
    <li><p> {{ user }} </p></li>
 {% endfor %}
 </ul>

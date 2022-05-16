@@ -23,26 +23,31 @@ def profile(request):
 
 
 def index(request):
-    suppliers = User.objects.filter(groups__exact=1)
-    s_count = User.objects.filter(groups__exact=1).count()
+    suppliers_a = User.objects.filter(groups__name__exact='Suppliers_A')
+    s_a_count = User.objects.filter(groups__name__exact='Suppliers_A').count()
 
-    factories = User.objects.filter(groups__exact=2)
-    f_count = User.objects.filter(groups__exact=2).count()
+    suppliers_b = User.objects.filter(groups__name__exact='Suppliers_B')
+    s_b_count = User.objects.filter(groups__name__exact='Suppliers_B').count()
 
-    warehouses = User.objects.filter(groups__exact=3)
-    w_count = User.objects.filter(groups__exact=3).count()
+    factories = User.objects.filter(groups__name__exact='Factories')
+    f_count = User.objects.filter(groups__name__exact='Factories').count()
 
-    logistics = User.objects.filter(groups__exact=4)
-    l_count = User.objects.filter(groups__exact=4).count()
+    warehouses = User.objects.filter(groups__name__exact='Warehouses')
+    w_count = User.objects.filter(groups__name__exact='Warehouses').count()
 
-    distributors = User.objects.filter(groups__exact=5)
-    d_count = User.objects.filter(groups__exact=5).count()
+    logistics = User.objects.filter(groups__name__exact='Logistics')
+    l_count = User.objects.filter(groups__name__exact='Logistics').count()
 
-    all = s_count + f_count + w_count + l_count + d_count
+    distributors = User.objects.filter(groups__name__exact='Distributors')
+    d_count = User.objects.filter(groups__name__exact='Distributors').count()
+
+    all = s_a_count + s_b_count + f_count + w_count + l_count + d_count
 
     context = {
-        'suppliers': suppliers,
-        's_count': s_count,
+        'suppliers_a': suppliers_a,
+        's_a_count': s_a_count,
+        'suppliers_b': suppliers_b,
+        's_b_count': s_b_count,
         'factories': factories,
         'f_count': f_count,
         'warehouses': warehouses,

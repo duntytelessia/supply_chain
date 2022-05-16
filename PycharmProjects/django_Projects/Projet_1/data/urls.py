@@ -20,4 +20,5 @@ urlpatterns = [
     path('', index),
     path('success/', succes),
     path('profile/', profile, name='profile'),
+
 ]
