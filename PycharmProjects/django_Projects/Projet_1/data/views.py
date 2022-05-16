@@ -7,6 +7,9 @@ from .forms import CustomUserCreationForm, UserChangeForm
 
 User = get_user_model()
 
+
+
+
 @login_required
 def profile(request):
     has_group = request.user.groups.all().exists()
