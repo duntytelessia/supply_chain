@@ -17,14 +17,14 @@ class Week(models.Model):
 
 #Marchandise
 class Goods(models.Model):
-    idG = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default=2)
+    idG = models.CharField(max_length=200, primary_key=True)
     nameG = models.CharField(max_length=200)
     durG = models.DurationField()
 
 
 class Stock(models.Model):
-    idS = models.BigAutoField(primary_key=True)
-    idG = models.ForeignKey(Goods, on_delete=models.CASCADE)
+    idS = models.CharField(max_length=200, primary_key=True)
+    idG = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     idU = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default=2)
     quanS = models.FloatField()
     dateS = models.DateField()
@@ -32,10 +32,10 @@ class Stock(models.Model):
 
 #Commande
 class Order(models.Model):
-    idO = models.BigAutoField(primary_key=True)
-    sellerO = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='order_seller')
-    buyerO = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='order_buyer')
-    idG = models.ForeignKey(Goods, on_delete=models.CASCADE)
+    idO = models.CharField(max_length=200, primary_key=True)
+    sellerO = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='order_seller', default=2)
+    buyerO = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='order_buyer', default=2)
+    goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     quanO = models.FloatField()
     dateO = models.DateField()
 
