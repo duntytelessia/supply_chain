@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, AbstractUser
 
 
 # =============================================================================
+# =============================================================================
 
 class CustomUser(AbstractUser):
     validate = models.BooleanField(default=False)
