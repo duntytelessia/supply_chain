@@ -1,6 +1,10 @@
 from django.contrib import admin
-from .models import Week, S_Product, D_Product
+from django.contrib.auth.admin import UserAdmin
+from .models import CustomUser
 
-admin.site.register(Week)
-admin.site.register(S_Product)
-admin.site.register(D_Product)
+
+class CustomUserAdmin(UserAdmin):
+    list_display = ('username', 'first_name', 'last_name', 'email', 'validate')
+
+
+admin.site.register(CustomUser, CustomUserAdmin)

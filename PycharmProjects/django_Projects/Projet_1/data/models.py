@@ -1,8 +1,13 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 
 
 # =============================================================================
+
+class CustomUser(AbstractUser):
+    validate = models.BooleanField(default=False)
+
+
 # class Week(models.Model):
 #     week = models.PositiveIntegerField()
 # 
@@ -38,14 +43,7 @@ from django.contrib.auth.models import User
 #         return self.d_name
 # =============================================================================
 
-class goods(models.Model):
-    IdM
-    NameM
-    DurationM
-    
-class user(models.Model):
-    IdU
-    NameU
-    PositionU
-    ExpenseU
-    ProfitU
+#class goods(models.Model):
+#    IdM
+#    NameM
+#    DurationM

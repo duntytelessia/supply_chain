@@ -1,6 +1,7 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserChangeForm
-from django.core.exceptions import ValidationError
+
+User = get_user_model()
 
 
 class GroupChangeForm(UserChangeForm):

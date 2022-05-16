@@ -1,8 +1,10 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserChangeForm
 from django import forms
 from django.core.exceptions import ValidationError
 
+User = get_user_model()
 
 class CustomUserCreationForm(forms.Form):
     username = forms.CharField(label='Enter Username', max_length=150)
