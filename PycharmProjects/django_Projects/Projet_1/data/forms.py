@@ -52,11 +52,11 @@ class CustomUserCreationForm(forms.Form):
         return user
 
 
-class UserChangeForm(forms.Form):
+class UserChangeForm(forms.ModelForm):
     """Overriding visible fields."""
     class Meta:
         model = User
-        fields = ('username', 'password', 'email', 'first_name', 'last_name')
+        fields = ('username', 'email', 'first_name', 'last_name')
 
 
 class ValidationForm(forms.ModelForm):

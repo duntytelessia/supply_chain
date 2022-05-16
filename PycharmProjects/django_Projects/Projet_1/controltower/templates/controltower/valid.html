@@ -1,0 +1,23 @@
+{% extends 'data/base_generic.html' %}
+
+{% block content %}
+    <h1> Control Tower Interface</h1>
+    <h2> All users :</h2>
+
+    <table>
+        <tr>
+            <td> name </td>
+            <td> <em> Actor Category </em> </td>
+            <td> Codename </td>
+        </tr>
+    {% for user in all_users %}
+        <tr>
+            <td> <p> {{ user }} </p> </td>
+            <td> {% if user.is_superuser %} <mark> admin </mark>
+                 {% else %} <em> {{ user.groups.all.0 }} </em> {% endif %} </td>
+            <td>  <p> {{ user.codename }}</p> </td>
+        </tr>
+    {% endfor %}
+    </table>
+
+{% endblock %}

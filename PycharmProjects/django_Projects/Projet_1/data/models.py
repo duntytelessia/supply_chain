@@ -1,9 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 #Utilisateur
 class CustomUser(AbstractUser):
     validate = models.BooleanField(default=False)
+    codename = models.CharField(max_length=10, default='A')
+
 
 class Week(models.Model):
     week = models.PositiveIntegerField()
@@ -11,11 +14,13 @@ class Week(models.Model):
     def __str__(self):
         return str(self.week)
 
+
 #Marchandise
 class Goods(models.Model):
     idG = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default=2)
     nameG = models.CharField(max_length=200)
     durG = models.DurationField()
+
 
 class Stock(models.Model):
     idS = models.BigAutoField(primary_key=True)
@@ -23,6 +28,7 @@ class Stock(models.Model):
     idU = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default=2)
     quanS = models.FloatField()
     dateS = models.DateField()
+
 
 #Commande
 class Order(models.Model):

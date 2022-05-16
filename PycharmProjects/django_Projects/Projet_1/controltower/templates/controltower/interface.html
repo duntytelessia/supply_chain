@@ -25,7 +25,10 @@
     </table>
 
 {% if can_begin %}
-We can begin the simulation
+<form action='valid' method='GET'>
+<button type='submit'> Begin </button>
+</form>
+
 {% else %}
 To begin the simulation, you need all registered accounts to which you assigned a group to be ready.
 {% endif %}
