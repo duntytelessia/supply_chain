@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserChangeForm
 
 User = get_user_model()
 
-
+# form to change the group of a user
 class GroupChangeForm(UserChangeForm):
     """Overriding visible fields."""
     password = None

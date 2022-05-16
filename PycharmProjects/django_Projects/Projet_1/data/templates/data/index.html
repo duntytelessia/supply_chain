@@ -5,6 +5,7 @@
 
 <h2>  {{ all }} actors in this simulation </h2>
 
+<!-- List of all registered actors, classed by their group -->
 <h3> Suppliers A : ({{ s_a_count }})</h3>
 
 <ul>
@@ -54,6 +55,10 @@
 </ul>
 
 <p> <a href="register/"> Create new account</a></p>
+
+{% if not group_exist %}
+<p> <a href="initialize/"> Initialize database </a></p>
+{% endif %}
 
 {% endblock %}
 

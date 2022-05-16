@@ -8,16 +8,16 @@ from controltower.forms import GroupChangeForm
 User = get_user_model()
 
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_superuser)     # only admin can access this page
 def interface(request):
     all_users = User.objects.all()
     count_has_group, count_validate = 0, 0
-    for u in all_users:
+    for u in all_users:   # to know if each user with a group has validated
         if u.groups.all().exists():
             count_has_group += 1
         if u.validate:
             count_validate += 1
-    can_begin = (count_has_group == count_validate)
+    can_begin = (count_has_group == count_validate)     # we can start the simulation
 
     context = {
         'all_users': all_users,
@@ -27,9 +27,9 @@ def interface(request):
 
 
 @user_passes_test(lambda u: u.is_superuser)
-def change_group(request, username):
+def change_group(request, username):    # username comes from the second part of the url
     if request.method == 'POST':
-        f = GroupChangeForm(request.POST, instance=User.objects.get(username__exact=username))
+        f = GroupChangeForm(request.POST, instance=User.objects.get(username__exact=username))  # changes group
         if f.is_valid():
             f.save()
             messages.success(request, 'Group changed successfully')
@@ -42,9 +42,9 @@ def change_group(request, username):
 
 
 @user_passes_test(lambda u: u.is_superuser)
-def del_user(request, username):
+def del_user(request, username):    # username comes frop the second part of the url
     user = User.objects.get(username__exact=username)
-    if not user.is_superuser:
+    if not user.is_superuser:  # you can't delete another admin
         user.delete()
     return redirect('/controltower')
 
@@ -53,12 +53,12 @@ def del_user(request, username):
 def valid(request):
     all_users = User.objects.all()
 
-    suppliers_a = User.objects.filter(groups__name__exact='Suppliers_A')
+    suppliers_a = User.objects.filter(groups__name__exact='Suppliers_A')    # all the users with the role supplier A
     i = 0
-    for user in suppliers_a:
+    for user in suppliers_a:    # attributes a code in the form SA'i' automatically
         i += 1
         user.codename = 'SA'+str(i)
-        user.save()
+        user.save()     # important, saves the changes
 
     suppliers_b = User.objects.filter(groups__name__exact='Suppliers_B')
     i = 0

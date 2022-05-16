@@ -3,7 +3,7 @@
 {% block title %}Profile Page{% endblock title %}
 {% block content %}
     <div class="row my-3 p-3">
-        <h1>This is the profile page for {{ user }}</h1>
+        <h1>This is the profile page for {{ user }}</h1>  <!-- user is the one currently logged-in -->
 
         {% if user.is_superuser %}
             <h2> You participate in this simulation as admin</h2>
@@ -12,7 +12,7 @@
                 <h2> You do not participate in this simulation</h2>
                 Wait for admin to add you
             {% else %}
-                <h2> You participate in this simulation as {{ user.groups.all.0 }}</h2>
+                <h2> You participate in this simulation as {{ user.groups.all.0 }}</h2> <!-- group of the user -->
                     {% if messages %}
                     <ul>
                         {% for message in messages %}
@@ -21,7 +21,7 @@
                     </ul>
                     {% endif %}
 
-         <form method="post" >
+         <form method="post" > <!-- validate button -->
              {% csrf_token %}
              <table>
                 {{ form.as_table }}
@@ -34,7 +34,7 @@
 
             {% endif %}
         {% endif %}
-    </div>
+    </div> <!-- Personal data of the user -->
     <h3> First Name : </h3>  <p>{{user.first_name }} </p>
 
     <h3> Last Name : </h3>  <p>{{user.last_name }} </p>

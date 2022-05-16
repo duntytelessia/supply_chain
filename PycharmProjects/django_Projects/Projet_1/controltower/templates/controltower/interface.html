@@ -4,7 +4,7 @@
     <h1> Control Tower Interface</h1>
     <h2> All users :</h2>
 
-    <table>
+    <table> <!-- table of all users -->
         <tr>
             <td> name </td>
             <td> <em> Actor Category </em> </td>
@@ -14,17 +14,19 @@
         </tr>
     {% for user in all_users %}
         <tr>
-            <td> <p> {{ user }} </p> </td>
-            <td> {% if user.is_superuser %} <mark> admin </mark>
+            <td> <p> {{ user }} </p> </td>  <!-- username -->
+            <td> {% if user.is_superuser %} <mark> admin </mark>    <!-- group or admin -->
                  {% else %} <em> {{ user.groups.all.0 }} </em> {% endif %} </td>
+            <!-- changes the group of non-admin users -->
             <td> {% if not user.is_superuser %} <p> <a href="cg/{{user}}"> change </a> </p> {% endif %} </td>
-            <td> {% if user.validate %} X {% endif %}</td>
+            <td> {% if user.validate %} X {% endif %}</td> <!-- show X if the user agrees with his role -->
+            <!-- deletes non-admin users -->
             <td> {% if not user.is_superuser %} <a href="del/{{user}}"> delete user </a> {% endif %} </td>
         </tr>
     {% endfor %}
     </table>
 
-{% if can_begin %}
+{% if can_begin %}  <!-- if everyone has validated -->
 <form action='valid' method='GET'>
 <button type='submit'> Begin </button>
 </form>
