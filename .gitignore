@@ -1,0 +1,10 @@
+
+PycharmProjects/django_Projects/Projet_1/.idea/
+
+PycharmProjects/django_Projects/Projet_1/controltower/__pycache__/
+
+PycharmProjects/django_Projects/Projet_1/controltower/migrations/__pycache__/
+
+PycharmProjects/django_Projects/Projet_1/data/__pycache__/
+
+*.pyc
