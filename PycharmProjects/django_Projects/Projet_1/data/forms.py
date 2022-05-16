@@ -52,8 +52,14 @@ class CustomUserCreationForm(forms.Form):
         return user
 
 
-class UserChangeForm(UserChangeForm):
+class UserChangeForm(forms.Form):
     """Overriding visible fields."""
     class Meta:
         model = User
         fields = ('username', 'password', 'email', 'first_name', 'last_name')
+
+
+class ValidationForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['validate']

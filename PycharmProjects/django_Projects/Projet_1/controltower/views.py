@@ -11,8 +11,17 @@ User = get_user_model()
 @user_passes_test(lambda u: u.is_superuser)
 def interface(request):
     all_users = User.objects.all()
+    count_has_group, count_validate = 0, 0
+    for u in all_users:
+        if u.groups.all().exists():
+            count_has_group += 1
+        if u.validate:
+            count_validate += 1
+    can_begin = (count_has_group == count_validate)
+
     context = {
         'all_users': all_users,
+        'can_begin': can_begin,
     }
     return render(request, 'controltower/interface.html', context=context)
 

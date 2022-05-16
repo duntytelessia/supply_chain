@@ -3,14 +3,24 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .forms import CustomUserCreationForm, UserChangeForm
+from .forms import CustomUserCreationForm, UserChangeForm, ValidationForm
 
 User = get_user_model()
+
 
 @login_required
 def profile(request):
     has_group = request.user.groups.all().exists()
-    return render(request, 'data/profile.html', context={'has_group': has_group})
+    if request.method == 'POST':
+        f = ValidationForm(request.POST, instance=request.user)
+        if f.is_valid():
+            f.save()
+            messages.success(request, 'Validation complete')
+            return redirect('profile')
+
+    else:
+        f = ValidationForm(instance=request.user)
+    return render(request, 'data/profile.html', context={'has_group': has_group, 'form': f})
 
 
 def index(request):

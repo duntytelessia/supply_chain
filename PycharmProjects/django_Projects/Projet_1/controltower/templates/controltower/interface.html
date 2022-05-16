@@ -18,9 +18,15 @@
             <td> {% if user.is_superuser %} <mark> admin </mark>
                  {% else %} <em> {{ user.groups.all.0 }} </em> {% endif %} </td>
             <td> {% if not user.is_superuser %} <p> <a href="cg/{{user}}"> change </a> </p> {% endif %} </td>
-            <td>  </td>
+            <td> {% if user.validate %} X {% endif %}</td>
             <td> {% if not user.is_superuser %} <a href="del/{{user}}"> delete user </a> {% endif %} </td>
         </tr>
     {% endfor %}
     </table>
+
+{% if can_begin %}
+We can begin the simulation
+{% else %}
+To begin the simulation, you need all registered accounts to which you assigned a group to be ready.
+{% endif %}
 {% endblock %}
