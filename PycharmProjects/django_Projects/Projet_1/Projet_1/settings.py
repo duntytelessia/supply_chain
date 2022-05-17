@@ -83,16 +83,16 @@ WSGI_APPLICATION = 'Projet_1.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
+<<<<<<< Updated upstream
         'NAME': 'my_database',
+=======
+        'NAME': 'mydatabase',
+>>>>>>> Stashed changes
         'USER': 'root',
-        'PASSWORD': 'pWa*62p7',
+        'PASSWORD': '1234',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
-    #'default': {
-    #    'ENGINE': 'django.db.backends.sqlite3',
-    #    'NAME': 'mydatabase',
-    #}
 }
 
 
