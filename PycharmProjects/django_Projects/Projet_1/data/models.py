@@ -19,7 +19,7 @@ class Week(models.Model):
 class Goods(models.Model):
     idG = models.CharField(max_length=200, primary_key=True)
     nameG = models.CharField(max_length=200)
-    durG = models.DurationField()
+    durG = models.PositiveIntegerField()
 
 
 class Stock(models.Model):
