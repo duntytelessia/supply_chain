@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from .forms import CustomUserCreationForm, UserChangeForm, ValidationForm
 
+from .models import Goods
+
 User = get_user_model()
 
 
@@ -113,5 +115,66 @@ def initialize(request):
         logistics.save()
         distributors = Group(name='Distributors')
         distributors.save()
+
+    if not Goods.objects.all().exists():
+        good_a = Goods(idG='R1', nameG='raw beef', durG=3)
+        good_a.save()
+        good_b = Goods(idG='R2', nameG='raw pork', durG=3)
+        good_b.save()
+        good_c = Goods(idG='P1', nameG='pepper', durG=5)
+        good_c.save()
+        good_d = Goods(idG='P2', nameG='sauce', durG=5)
+        good_d.save()
+        good_e = Goods(idG='F1', nameG='Beef jerky', durG=7)
+        good_e.save()
+        good_f = Goods(idG='F2', nameG='juciy pork', durG=7)
+        good_f.save()
+
+
+    if not User.objects.all().exists():
+        User.objects.create_user(username='Wenjie',
+                                 email='wenjie.liu1002@gmail.com',
+                                 password='1234',
+                                 is_staff=True,
+                                 is_active=True,
+                                 is_superuser=True
+                                 )
+        User.objects.create_user(username='Clement',
+                                 email='dunty.telessia@gmail.com',
+                                 password='1234',
+                                 is_staff=True,
+                                 is_active=True,
+                                 is_superuser=True
+                                 )
+        User.objects.create_user(username='S1',
+                                 email='s1@s.com',
+                                 password='1234',
+                                 is_active=True,
+                                 )
+        User.objects.create_user(username='S2',
+                                 email='s2@s.com',
+                                 password='1234',
+                                 is_active=True,
+                                 )
+        User.objects.create_user(username='F1',
+                                 email='f1@f.com',
+                                 password='1234',
+                                 is_active=True,
+                                 )
+        User.objects.create_user(username='W1',
+                                 email='w1@w.com',
+                                 password='1234',
+                                 is_active=True,
+                                 )
+        User.objects.create_user(username='L1',
+                                 email='l1@l.com',
+                                 password='1234',
+                                 is_active=True,
+                                 )
+        User.objects.create_user(username='D1',
+                                 email='d1@d.com',
+                                 password='1234',
+                                 is_active=True,
+                                 )
 
     return render(request, 'data/initialize.html')
