@@ -33,6 +33,9 @@ def change_group(request, username):    # username comes from the second part of
         f = GroupChangeForm(request.POST, instance=User.objects.get(username__exact=username))  # changes group
         if f.is_valid():
             f.save()
+            user = User.objects.get(username__exact=username)  # user needs to validate again after a change of group
+            user.validate = False
+            user.save()
             messages.success(request, 'Group changed successfully')
             return redirect('/controltower')
 
@@ -122,3 +125,14 @@ def valid(request):
     }
 
     return render(request, 'controltower/valid.html', context=context)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def validate_all(request):
+    users = User.objects.all()
+    for user in users:
+        if user.groups.all().exists():
+            user.validate = True
+            user.save()
+
+    return redirect('/controltower')
