@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserChangeForm
+from data.models import Goods
 
 User = get_user_model()
 
@@ -11,3 +12,12 @@ class GroupChangeForm(UserChangeForm):
     class Meta:
         model = User
         fields = ('groups',)
+
+
+class GoodChangeForm(UserChangeForm):
+    """Overriding visible fields."""
+    password = None
+
+    class Meta:
+        model = Goods
+        fields = ('nameG', 'durG',)

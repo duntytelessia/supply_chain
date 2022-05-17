@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
-from controltower.forms import GroupChangeForm
+from controltower.forms import GroupChangeForm, GoodChangeForm
+from data.models import Goods
 
 User = get_user_model()
 
@@ -42,11 +43,26 @@ def change_group(request, username):    # username comes from the second part of
 
 
 @user_passes_test(lambda u: u.is_superuser)
-def del_user(request, username):    # username comes frop the second part of the url
+def del_user(request, username):    # username comes from the second part of the url
     user = User.objects.get(username__exact=username)
     if not user.is_superuser:  # you can't delete another admin
         user.delete()
     return redirect('/controltower')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def edit_good(request, idg):    # idG comes from the second part of the url
+    if request.method == 'POST':
+        f = GoodChangeForm(request.POST, instance=Goods.objects.get(idG__exact=idg))  # changes group
+        if f.is_valid():
+            f.save()
+            messages.success(request, 'Info changed successfully')
+            return redirect('/controltower/valid')
+
+    else:
+        f = GoodChangeForm(request.POST, instance=Goods.objects.get(idG__exact=idg))
+
+    return render(request, 'controltower/editgood.html', {'form': f, 'idG': idg})
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -95,8 +111,14 @@ def valid(request):
         user.codename = 'D'+str(i)
         user.save()
 
+    goods_r = Goods.objects.filter(idG__contains='R').order_by('idG')
+    goods_p = Goods.objects.filter(idG__contains='P').order_by('idG')
+    goods_f = Goods.objects.filter(idG__contains='F').order_by('idG')
     context = {
         'all_users': all_users,
+        'goods_r': goods_r,
+        'goods_p': goods_p,
+        'goods_f': goods_f,
     }
 
     return render(request, 'controltower/valid.html', context=context)

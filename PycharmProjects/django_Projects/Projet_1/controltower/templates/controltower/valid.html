@@ -20,4 +20,39 @@
     {% endfor %}
     </table>
 
+    <h2> Goods :</h2>
+
+    <table> <!-- table of all goods, the user can also modify them -->
+        <tr>
+            <td> Supplier A</td>
+            <td></td>
+            <td> Supplier B</td>
+            <td></td>
+            <td> Supplier A</td>
+            <td></td>
+            <td> Supplier B</td>
+            <td></td>
+        </tr>
+        <tr>
+        {% for good in goods_r %}
+            <td> {{ good.nameG }} </td>
+            <td> <a href="{{good.idG}}"> edit </a></td>
+        {% endfor %}
+        </tr>
+        <tr>
+        {% for good in goods_p %}
+            <td> {{ good.nameG }} </td>
+            <td> <a href="{{good.idG}}"> edit </a></td>
+            {% endfor %}
+        </tr>
+        <tr>
+        {% for good in goods_f %}
+            <td></td>
+            <td> {{ good.nameG }} </td>
+            <td> <a href="{{good.idG}}"> edit </a></td>
+            <td></td>
+            {% endfor %}
+        </tr>
+    </table>
+
 {% endblock %}
