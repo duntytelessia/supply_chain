@@ -15,11 +15,18 @@ class Week(models.Model):
         return str(self.week)
 
 
-#Marchandise
+# Marchandise
 class Goods(models.Model):
     idG = models.CharField(max_length=200, primary_key=True)
     nameG = models.CharField(max_length=200)
     durG = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.nameG
+
+    class Meta:
+        verbose_name_plural = "Goods"
+
 
 
 class Stock(models.Model):
@@ -39,9 +46,11 @@ class Order(models.Model):
     quanO = models.FloatField()
     dateO = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
 
-    class Transaction:
-        abstract = True
-        idT = models.BigAutoField(primary_key=True)
-        quanT = models.FloatField()
-        dateT = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
-        priceT = models.FloatField()
+class Transaction(models.Model):
+    idT = models.BigAutoField(primary_key=True)
+    sellerT = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tran_seller', default=2)
+    buyerT = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tran_buyer', default=2)
+    goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
+    quanT = models.FloatField()
+    dateT = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
+    priceT = models.FloatField()
