@@ -136,10 +136,10 @@ def initialize(request):
         good_m3.save()
         good_m4 = Goods(idG='P4', nameG='pork sauce', durG=5)
         good_m4.save()
-        good_p1 = Goods(idG='F1', nameG='Beef jerky', durG=7)
-        good_p1.save()
-        good_p2 = Goods(idG='F2', nameG='juciy pork', durG=7)
-        good_p2.save()
+        good_f1 = Goods(idG='F1', nameG='Beef jerky', durG=7)
+        good_f1.save()
+        good_f2 = Goods(idG='F2', nameG='juciy pork', durG=7)
+        good_f2.save()
 
 
     if not User.objects.all().exists():

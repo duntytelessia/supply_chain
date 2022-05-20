@@ -15,11 +15,18 @@ class Week(models.Model):
         return str(self.week)
 
 
-#Marchandise
+# Marchandise
 class Goods(models.Model):
     idG = models.CharField(max_length=200, primary_key=True)
     nameG = models.CharField(max_length=200)
     durG = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.nameG
+
+    class Meta:
+        verbose_name_plural = "Goods"
+
 
 
 class Stock(models.Model):
@@ -48,3 +55,4 @@ class Transaction(models.Model):
     goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     dateT = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
     priceT = models.FloatField(default=0)
+
