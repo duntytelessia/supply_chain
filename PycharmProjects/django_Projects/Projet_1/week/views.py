@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from data.models import Week, CustomUser, Goods, Order, Transaction
-from week.forms import TransactionForm
-from django.forms import modelformset_factory
+from django.forms import formset_factory, modelformset_factory
+from week.forms import PriceForm
 
 User = get_user_model()
 
@@ -31,7 +31,16 @@ def modify_as_controltower(request, week):
     goods_b = Goods.objects.filter(idG__in=['R2', 'R4'])
     seller = request.user
     week = Week.objects.get(week__exact=week)
-    list = []
+    list_a, list_p = [], []
+    dict_a, dict_p = {}, {}
+    keys_a, keys_p = [], []
+
+    # form layout
+    def formlayout(formset, keys, dict):
+        i=0
+        for f in formset:
+            dict.update({keys[i]: f})
+            i += 1
 
     # create or get every transaction we want to modify
     for buyer in suppliers_a:
@@ -42,67 +51,38 @@ def modify_as_controltower(request, week):
             else:
                 tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer, dateT=week)
             tran.save()
-            list.append(id)
+            list_a.append(id)
+            keys_a.append(buyer.codename + good.idG)
 
     # form creation
-    TransactionFormSet = modelformset_factory(Transaction, fields=['quanT'], labels={'quanT': ''}, extra=0)
+    TransactionFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceT'],
+                                              labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
 
     if request.method == 'POST':
-        test = False
-        formset = TransactionFormSet(request.POST or None, queryset=Transaction.objects.filter(idT__in=list))
-        if formset.is_valid():
-            formset.save()
+        formset_a = TransactionFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=list_a))
+        if formset_a.is_valid():
+            formset_a.save()
             messages.success(request, 'Transaction edited')
             return HttpResponseRedirect(request.path_info)
 
     else:
-        formset = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list))
+        formset_a = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_a))
 
+    formlayout(formset_a, keys_a, dict_a)
     context = {
         'suppliers_a': suppliers_a,
         'suppliers_b': suppliers_b,
         'goods_a': goods_a,
         'goods_b': goods_b,
         'week': str(week),
+        'dict_a': dict_a,
+        'dict_p': dict_p,
         'messages': messages,
-        'formset': formset,
+        'formset_a': formset_a,
     }
 
     return render(request, 'week/modify_as_controltower.html', context=context)
 
-
-@user_passes_test(lambda u: u.is_superuser)
-def transaction_ct(request, week, codename, idg):
-
-    seller = request.user
-    buyer = User.objects.get(codename__exact=codename)
-    good = Goods.objects.get(idG__exact=idg)
-    week = Week.objects.get(week__exact=week)
-    id = seller.codename + buyer.codename + good.idG + str(week.week)
-    if Transaction.objects.filter(idT__exact=id).exists():
-        tran = Transaction.objects.get(idT__exact=id)
-    else:
-        tran = Transaction(idT=id, sellerT=seller, buyerT=buyer, dateT=week)
-        tran.save()
-    if request.method == 'POST':
-        f = TransactionForm(request.POST, instance=tran)  # changes group
-        if f.is_valid():
-            f.save()
-            messages.success(request, 'Transaction edited')
-            return redirect('/week/'+str(week)+'/controltower/modify')
-
-    else:
-        f = TransactionForm(instance=tran)
-
-    context = {
-        'id': id,
-        'seller': seller,
-        'buyer': buyer,
-        'good': good,
-        'week': week,
-        'f': f,
-    }
-    return render(request, 'week/transaction.html', context=context)
 
 
 def notallowed(request):

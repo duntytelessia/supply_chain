@@ -55,4 +55,3 @@ class Transaction(models.Model):
     goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     dateT = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
     priceT = models.FloatField(default=0)
-
