@@ -27,7 +27,7 @@ class Stock(models.Model):
     idG = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     idU = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default=2)
     quanS = models.FloatField()
-    dateS = models.DateField()
+    dateS = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
 
 
 #Commande
@@ -36,12 +36,15 @@ class Order(models.Model):
     sellerO = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='order_seller', default=2)
     buyerO = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='order_buyer', default=2)
     goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
-    quanO = models.FloatField()
-    dateO = models.DateField()
+    quanO = models.FloatField(default=0)
+    dateO = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
 
-    class Transaction:
-        abstract = True
-        idT = models.BigAutoField(primary_key=True)
-        quanT = models.FloatField()
-        dateT = models.DateField()
-        priceT = models.FloatField()
+
+class Transaction(models.Model):
+    idT = models.CharField(max_length=200, primary_key=True)
+    sellerT = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tran_seller', default=2)
+    buyerT = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tran_buyer', default=2)
+    quanT = models.FloatField(default=0)
+    goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
+    dateT = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
+    priceT = models.FloatField(default=0)

@@ -1,0 +1,57 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block content %}
+<h1> Control Tower Interface</h1>
+<h2> Week {{ week }} </h2>
+    <form method="post" >
+        {{ formset.as_p }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_a %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in suppliers_a %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_a %}
+                <td> f </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            <tr>
+                <td> price </td>
+                <td> form </td>
+            </tr>
+        </table>
+
+        <input type="submit" name="submit" value="Edit">
+    </form>
+-----------------------------
+
+<table>
+    <tr>
+        <td> </td>
+        {% for good in goods_b %}
+        <td> {{good.nameG}} </td>
+        {% endfor %}
+    </tr>
+    {% for user in suppliers_b %}
+    <tr>
+        <td> {{user.codename}} </td>
+        {% for good in goods_b %}
+        <td> form </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    <tr>
+        <td> price </td>
+        {% for good in goods_b %}
+        <td> form </td>
+        {% endfor %}
+    </tr>
+</table>
+
+{% endblock %}

@@ -25,4 +25,5 @@ urlpatterns = [
     path('modify/', views.modify, name='modify'),
     path('', include('data.urls')),
     path('controltower/', include('controltower.urls')),
+    path('week/', include('week.urls'))
 ]

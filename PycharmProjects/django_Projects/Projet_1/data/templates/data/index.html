@@ -3,6 +3,10 @@
 {% block content %}
 <h1> Welcome to the Production Chain Website ! </h1>
 
+{% if week_exist %}
+<a href="week"> access to the simulation </a>
+{% endif %}
+
 <h2>  {{ all }} actors in this simulation </h2>
 
 <!-- List of all registered actors, classed by their group -->

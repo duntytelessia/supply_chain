@@ -4,13 +4,14 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from controltower.forms import GroupChangeForm, GoodChangeForm
-from data.models import Goods
+from data.models import Goods, Week
 
 User = get_user_model()
 
 
 @user_passes_test(lambda u: u.is_superuser)     # only admin can access this page
 def interface(request):
+    has_begun = Week.objects.all().exists()
     all_users = User.objects.all()
     count_has_group, count_validate = 0, 0
     for u in all_users:   # to know if each user with a group has validated
@@ -24,7 +25,10 @@ def interface(request):
         'all_users': all_users,
         'can_begin': can_begin,
     }
-    return render(request, 'controltower/interface.html', context=context)
+    if has_begun:
+        return redirect('/week')
+    else:
+        return render(request, 'controltower/interface.html', context=context)
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -40,7 +44,7 @@ def change_group(request, username):    # username comes from the second part of
             return redirect('/controltower')
 
     else:
-        f = GroupChangeForm(request.POST, instance=User.objects.get(username__exact=username))
+        f = GroupChangeForm(instance=User.objects.get(username__exact=username))
 
     return render(request, 'controltower/changegroup.html', {'form': f, 'username': username})
 
@@ -63,7 +67,7 @@ def edit_good(request, idg):    # idG comes from the second part of the url
             return redirect('/controltower/valid')
 
     else:
-        f = GoodChangeForm(request.POST, instance=Goods.objects.get(idG__exact=idg))
+        f = GoodChangeForm(instance=Goods.objects.get(idG__exact=idg))
 
     return render(request, 'controltower/editgood.html', {'form': f, 'idG': idg})
 
@@ -136,3 +140,11 @@ def validate_all(request):
             user.save()
 
     return redirect('/controltower')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def begin_simulation(request):
+    week_1 = Week(week=1)
+    week_1.save()
+
+    return render(request, 'controltower/begin_simulation.html')

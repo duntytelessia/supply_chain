@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from .forms import CustomUserCreationForm, UserChangeForm, ValidationForm
 
-from .models import Goods
+from .models import Goods, Week
 
 User = get_user_model()
 
@@ -49,6 +49,8 @@ def index(request):
 
     all = s_a_count + s_b_count + f_count + w_count + l_count + d_count     # how many users in total
 
+    week_exist = Week.objects.all().exists()
+
     context = {
         'suppliers_a': suppliers_a,
         's_a_count': s_a_count,
@@ -64,6 +66,7 @@ def index(request):
         'd_count': d_count,
         'all': all,
         'group_exist': group_exist,
+        'week_exist': week_exist,
     }
     return render(request, 'data/index.html', context = context)
 
@@ -117,38 +120,31 @@ def initialize(request):
         distributors.save()
 
     if not Goods.objects.all().exists():
-        good_mp1 = Goods(idG='MP1', nameG='raw beef', durG=3)
+        good_mp1 = Goods(idG='R1', nameG='raw beef', durG=3)
         good_mp1.save()
-        good_mp2 = Goods(idG='MP2', nameG='raw pork', durG=3)
+        good_mp2 = Goods(idG='R2', nameG='pepper', durG=3)
         good_mp2.save()
-        good_mp3 = Goods(idG='MP3', nameG='pepper', durG=5)
+        good_mp3 = Goods(idG='R3', nameG='raw pork', durG=5)
         good_mp3.save()
-        good_mp4 = Goods(idG='MP4', nameG='sauce', durG=5)
+        good_mp4 = Goods(idG='R4', nameG='sauce', durG=5)
         good_mp4.save()
-        good_m1 = Goods(idG='M1', nameG='beef', durG=3)
+        good_m1 = Goods(idG='P1', nameG='beef', durG=3)
         good_m1.save()
-        good_m2 = Goods(idG='M2', nameG='pork', durG=3)
+        good_m2 = Goods(idG='P2', nameG='beed sauce', durG=3)
         good_m2.save()
-        good_m3 = Goods(idG='M3', nameG='beed sauce', durG=5)
+        good_m3 = Goods(idG='P3', nameG='pork', durG=5)
         good_m3.save()
-        good_m4 = Goods(idG='M4', nameG='pork sauce', durG=5)
+        good_m4 = Goods(idG='P4', nameG='pork sauce', durG=5)
         good_m4.save()
-        good_p1 = Goods(idG='P1', nameG='Beef jerky', durG=7)
+        good_p1 = Goods(idG='F1', nameG='Beef jerky', durG=7)
         good_p1.save()
-        good_p2 = Goods(idG='P2', nameG='juciy pork', durG=7)
+        good_p2 = Goods(idG='F2', nameG='juciy pork', durG=7)
         good_p2.save()
 
 
     if not User.objects.all().exists():
-        User.objects.create_user(username='Wenjie',
+        User.objects.create_user(username='admin',
                                  email='wenjie.liu1002@gmail.com',
-                                 password='1234',
-                                 is_staff=True,
-                                 is_active=True,
-                                 is_superuser=True
-                                 )
-        User.objects.create_user(username='Clement',
-                                 email='dunty.telessia@gmail.com',
                                  password='1234',
                                  is_staff=True,
                                  is_active=True,

@@ -1,0 +1,36 @@
+{% block title %}
+    Edit Transaction
+{% endblock %}
+
+{% block content %}
+<!-- similar template as change_info -->
+     <div class="login">
+
+         {% if messages %}
+            <ul>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <h1>Edit Transaction - Production Chain Site</h1>
+         <p> Transaction iD: {{id}} </p>
+         <p> Buyer: {{buyer.codename}} </p>
+         <p> Seller: {{seller.codename}} </p>
+         <p> Good: {{good.nameG}} </p>
+         <p> Week: {{week}} </p>
+
+         <form method="post" >
+             {% csrf_token %}
+             <table>
+                {{ f.as_table }}
+                 <tr>
+                    <td></td>
+                    <td><input type="submit" name="submit" value="Edit" /></td>
+                </tr>
+             </table>
+         </form>
+     </div>
+
+{% endblock %}

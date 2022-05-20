@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     #'data.apps.DataConfig',
     'data',
     'controltower.apps.ControltowerConfig',
+    'week.apps.WeekConfig',
 
 ]
 
