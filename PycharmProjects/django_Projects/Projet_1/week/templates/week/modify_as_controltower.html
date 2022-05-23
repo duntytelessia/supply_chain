@@ -59,6 +59,34 @@
 
         <input type="submit" name="submitB" value="Edit">
     </form>
+-----------------------------------------------------------
+<form method="post" action="endpoint3">
+        {{ formset_a1.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_a1 %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in distributors %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_a1 %}
+                <td> {% with a1=user.codename|add:good.idG %}
+                        {% with b1=dict_a1|keyvalue:a1 %}
+                            {{ b1.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitA1" value="Edit">
+    </form>
 
 
 
