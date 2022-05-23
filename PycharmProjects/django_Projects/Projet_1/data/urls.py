@@ -20,5 +20,5 @@ urlpatterns = [
     path('', index),    # main page
     path('success/', succes),   # page after successfully creating an account
     path('profile/', profile, name='profile'),
-    path('initialize/', initialize, name = 'initialize')
+    path('initialize/', initialize, name='initialize')
 ]
