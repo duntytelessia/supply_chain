@@ -116,7 +116,7 @@ def modify_as_controltower(request, week):
             if Order.objects.filter(idO__exact=id).exists():
                 order = Order.objects.get(idO__exact=id)
             else:
-                order = Order(idO=id, sellerO=seller, goods=good, buyerO=buyer, dateO=week)
+                order = Order(idO=id, sellerO=seller, goods=good, buyerO=buyer1, dateO=week)
             order.save()
             list_a1.append(id)
             keys_a1.append(seller.codename + good.idG)
