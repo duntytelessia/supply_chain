@@ -2,15 +2,24 @@ from django.contrib.auth import get_user_model
 from django.forms import ModelForm
 from django import forms
 from django.core.exceptions import ValidationError
-from data.models import Order, Transaction
+from data.models import CustomUser
+
+User = get_user_model()
 
 
-class PriceForm(forms.Form):
+class ChangeUser_1(ModelForm):
+    password = None
 
-    price = forms.IntegerField(min_value=0)
+    class Meta:
+        model = User
+        fields = ('funds', 'validate')
 
-    def save(self, good, week, seller):
-        to_modify = Transaction.objects.filter(goods__exact=good, dateT=week, sellerT=seller)
-        for t in to_modify:
-            t = Transaction(priceT=self.cleaned_data['price'])
-            t.save()
+
+class ChangeUser(ModelForm):
+    password = None
+
+    class Meta:
+        model = User
+        fields = ('validate', )
+
+

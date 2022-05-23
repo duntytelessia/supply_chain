@@ -1,7 +1,16 @@
-{% extends 'data/base_generic.html' %}
+{% extends 'week/base_info.html' %}
+{% load custom_tags %}
+{% block lambda %}
 
-{% block content %}
-
-yo
-
+<form method="post">
+    {{ formset.management_form }}
+    {% csrf_token %}
+    {% for good in goods %}
+        {% with b=dict_f|keyvalue:good.idG %}
+        {{ good.nameG}}
+        {{ b.as_p }}
+        {% endwith %}
+    {% endfor %}
+    <input type="submit" name="submit" value="Edit">
+</form>
 {% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'data/base_generic.html' %}
+
+{% block content %}
+<h1> Control Tower Interface</h1>
+<h2> Week {{ week }} </h2>
+<h3> {{ user.username }}</h3>
+<h4> Codename : {{ user.codename }} </h4> <h4> Role : {{group}} </h4>
+<h5> Funds : {{ user.funds }}</h5>
+{% block lambda %}
+{% endblock %}
+{% endblock %}

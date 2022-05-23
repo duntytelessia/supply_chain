@@ -1,13 +1,15 @@
-{% extends 'data/base_generic.html' %}
+{% extends 'week/base_info.html' %}
 
-{% block content %}
-<h1> Control Tower Interface</h1>
-<h2> Week {{ week }} </h2>
-<h3> {{ user.username }}</h3>
-<h4> Codename : {{ user.codename }} </h4> <h4> Role : {{group}} </h4>
+{% block lambda %}
 <ul>
     <li> <a href="{{user.username}}/stock/{{group}}"> Stock </a> </li>
-    <li> <a href="buy"> Buy </a> </li>
+    <li> <a href="{{user.username}}/buy/{{group}}"> Buy </a> </li>
     <li> <a href="sales"> Sales </a> </li>
 </ul>
+
+<form method="post">
+    {% csrf_token %}
+    {{ f.as_p }}
+    <input type="submit" name="submit" value="Edit">
+</form>
 {% endblock %}

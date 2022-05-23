@@ -32,9 +32,9 @@ class Goods(models.Model):
 
 class Stock(models.Model):
     idS = models.CharField(max_length=200, primary_key=True)
-    idG = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
+    goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     idU = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default=2)
-    quanS = models.FloatField()
+    quanS = models.FloatField(default=0)
     dateS = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
 
 
@@ -56,3 +56,4 @@ class Transaction(models.Model):
     goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     dateT = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
     priceT = models.FloatField(default=0)
+    verifiedT = models.BooleanField(default=False)
