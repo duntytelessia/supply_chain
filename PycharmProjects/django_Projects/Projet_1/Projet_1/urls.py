@@ -28,4 +28,6 @@ urlpatterns = [
     path('week/', include('week.urls')),
     path('endpoint1', include('controltower.urls')),
     path('endpoint2', include('controltower.urls')),
+    path('endpoint3', include('controltower.urls')),
+
 ]
