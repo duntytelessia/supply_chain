@@ -9,11 +9,7 @@
     {% if user.is_superuser %}
         <li> <a href="{{week.week}}/controltower/modify"> week {{week.week}}  </a> </li>
     {% else %}
-        {% if has_group %}
-            <li> <a href="{{week.week}}/{{user.username}}/modify"> week {{week.week}}  </a> </li>
-        {% else %}
-            <li> <a href="notallowed"> week {{week.week}}  </a> </li>
-        {% endif %}
+    <li> <a href="notallowed"> week {{week.week}}  </a> </li>
     {% endif %}
 </ul>
 {% endfor %}

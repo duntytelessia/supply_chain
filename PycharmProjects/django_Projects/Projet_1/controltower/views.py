@@ -144,6 +144,9 @@ def validate_all(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def begin_simulation(request):
+    for user in User.objects.all():
+        user.validate = False
+        user.save()
     week_1 = Week(week=1)
     week_1.save()
 

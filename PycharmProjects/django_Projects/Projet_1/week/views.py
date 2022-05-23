@@ -13,12 +13,28 @@ User = get_user_model()
 @login_required
 def week(request):
     has_group = request.user.groups.all().exists()
-    weeks = Week.objects.all()
+    weeks = Week.objects.all().order_by('week')
+    last_week = weeks.last()
     context = {
         'weeks': weeks,
         'has_group': has_group,
     }
-    return render(request, 'week/week.html', context=context)
+    if request.user.is_superuser:
+        return render(request, 'week/week.html', context=context)
+    else:
+        return redirect('/week/'+str(last_week.week)+'/'+request.user.username)
+
+
+def infos(request, week, username):
+    user = User.objects.get(username__exact=username)
+    group = user.groups.all().first()
+
+    context = {
+        'week': week,
+        'user': user,
+        'group': group,
+    }
+    return render(request, 'week/infos.html', context=context)
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -84,6 +100,8 @@ def modify_as_controltower(request, week):
     return render(request, 'week/modify_as_controltower.html', context=context)
 
 
+def stock_supp_a(request, week, username):
+    return render(request, 'week/stock_supp_a.html')
 
 def notallowed(request):
     return render(request, 'week/notallowed.html')

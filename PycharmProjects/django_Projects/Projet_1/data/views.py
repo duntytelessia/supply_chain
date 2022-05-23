@@ -101,7 +101,7 @@ def modify(request):    # modify the information of a user
     else:
         f = UserChangeForm(instance=request.user)
 
-    return render(request, 'data/modify.html', {'form': f})
+    return render(request, 'data/infos.html', {'form': f})
 
 
 def initialize(request):
