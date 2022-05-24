@@ -1,0 +1,135 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block content %}
+<h1> Control Tower Interface</h1>
+<h2> Week {{ week }} </h2>
+<h3> {{ user.username }}</h3>
+<h4> Codename : {{ user.codename }} </h4> <h4> Role : {{group}} </h4>
+<h5> Funds : {{ user.funds }}</h5>
+
+<h3> Stock </h3>
+<form method="post">
+    {{ formset_stock.management_form }}
+    {% csrf_token %}
+    <table>
+    {% for good in goods_stock %}
+        <tr>
+        {% with b=dict_stock|keyvalue:good.idG %}
+            <td> {{ good.nameG}} </td>
+            <td> {{ b.as_p }} </td>
+        {% endwith %}
+        </tr>
+    {% endfor %}
+    </table>
+    <input type="submit" name="submitS" value="Edit">
+</form>
+--------------------------------------------------------------------------
+
+<h3> Buy </h3>
+<form method="post">
+        {{ formset_buy.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_buy %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in seller_buy %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_buy %}
+                <td>
+                    {% with a=user.codename|add:good.idG %}
+                        {% with tran=dict_info_buy|keyvalue:a %}
+                            Quantity : {{ tran.quanT }}
+                            Price : {{ tran.priceT }}
+                        {% endwith %}
+                    {% endwith %}
+                    {% with a=user.codename|add:good.idG %}
+                        {% with b=dict_buy|keyvalue:a %}
+                            {{ b.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitB" value="Edit">
+    </form>
+--------------------------------------------------------------------------
+{% if not supp %}
+<h3> Order </h3>
+<form method="post">
+        {{ formset_order.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_buy %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in seller_buy %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_buy %}
+                <td> {% with a=user.codename|add:good.idG %}
+                        {% with b=dict_order|keyvalue:a %}
+                            {{ b.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitO" value="Edit">
+    </form>
+
+--------------------------------------------------------------------------
+{% endif %}
+<h3> Sell </h3>
+    <form method="post">
+        {{ formset_sales.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_sales %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in buyer_sales %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_sales %}
+                <td> {% with c=user.codename|add:good.idG %}
+                        {% with d=dict_sales|keyvalue:c %}
+                            {{ d.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitA" value="Edit">
+    </form>
+
+-------------------------------------------------------------
+
+<h3> Validate </h3>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form_validate.as_p }}
+    <input type="submit" name="submitV" value="Edit">
+</form>
+
+{% endblock %}

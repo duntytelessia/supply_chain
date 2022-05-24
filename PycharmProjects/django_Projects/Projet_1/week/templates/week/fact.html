@@ -1,0 +1,100 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block content %}
+<h1> Control Tower Interface</h1>
+<h2> Week {{ week }} </h2>
+<h3> {{ user.username }}</h3>
+<h4> Codename : {{ user.codename }} </h4> <h4> Role : {{group}} </h4>
+<h5> Funds : {{ user.funds }}</h5>
+
+<h3> Stock </h3>
+<form method="post">
+    {{ formset_stock.management_form }}
+    {% csrf_token %}
+    {% for good in goods %}
+        {% with b=dict_stock|keyvalue:good.idG %}
+        {{ good.nameG}}
+        {{ b.as_p }}
+        {% endwith %}
+    {% endfor %}
+    <input type="submit" name="submitS" value="Edit">
+</form>
+--------------------------------------------------------------------------
+<h3> Validate </h3>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form_validate.as_p }}
+    <input type="submit" name="submitV" value="Edit">
+</form>
+-----------------------------
+<h3> Sell </h3>
+    <form method="post">
+        {{ formset_b.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_b %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in warehouses %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_b %}
+                <td> {% with c=user.codename|add:good.idG %}
+                        {% with d=dict_b|keyvalue:c %}
+                            {{ d.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitB" value="Edit">
+    </form>
+-----------------------------------------------------------
+<h3> Buy </h3>
+<form method="post">
+        {{ formset_a1.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_a1 %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in suppliers %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_a1 %}
+                <td> {% with a1=user.codename|add:good.idG %}
+                        {% with b1=dict_a1|keyvalue:a1 %}
+                            {{ b1.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitS" value="Edit">
+    </form>
+
+--------------------------------------------------------------------------
+
+<h3> Validate </h3>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form_validate.as_p }}
+    <input type="submit" name="submitV" value="Edit">
+</form>
+
+{% endblock %}
+
