@@ -16,6 +16,10 @@ def week(request):
     has_group = request.user.groups.all().exists()
     weeks = Week.objects.all().order_by('week')
     last_week = weeks.last()
+    if has_group:
+        group = request.user.groups.all().first()
+    else:
+        group = ''
     context = {
         'weeks': weeks,
         'has_group': has_group,
@@ -23,37 +27,10 @@ def week(request):
     if request.user.is_superuser:
         return render(request, 'week/week.html', context=context)
     else:
-        return redirect('/week/'+str(last_week.week)+'/'+request.user.username)
+        return redirect('/week/'+str(last_week.week)+'/'+group.name+'/'+request.user.username)
 
 
-def infos(request, week, username):
-    user = User.objects.get(username__exact=username)
-    group = user.groups.all().first()
-    if request.method == 'POST':
-        if week == 1:
-            f = ChangeUser_1(request.POST, instance=User.objects.get(username__exact=username))
-        else:
-            f = ChangeUser(request.POST, instance=User.objects.get(username__exact=username))
-        if f.is_valid():
-            f.save()
-            user = User.objects.get(username__exact=username)
-            user.save()
-            messages.success(request, 'Change effective')
-            return HttpResponseRedirect(request.path_info)
 
-    else:
-        if week == 1:
-            f = ChangeUser_1(instance=User.objects.get(username__exact=username))
-        else:
-            f = ChangeUser(instance=User.objects.get(username__exact=username))
-
-    context = {
-        'week': week,
-        'user': user,
-        'group': group,
-        'f': f,
-    }
-    return render(request, 'week/infos.html', context=context)
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -180,16 +157,15 @@ def modify_as_controltower(request, week):
 def suppliers_a(user):
     return (user.groups.first().name == 'Suppliers_A')
 
-
 @user_passes_test(suppliers_a)
-def stock_supp_a(request, week, username):
+def supp_a(request, week, username):
     goods = Goods.objects.filter(idG__in=['R1', 'R3', 'P1', 'P3'])
     user = User.objects.get(username__exact=username)
     group = user.groups.all().first()
     week = Week.objects.get(week__exact=week)
-    list_id = []
-    keys = []
-    dict_f = {}
+    ids_stock = []
+    keys_stock = []
+    dict_stock = {}
 
     # form layout
     def formlayout(formset, keys, dict):
@@ -205,37 +181,48 @@ def stock_supp_a(request, week, username):
         else:
             stc = Stock(idS=id, goods=good, idU=user, dateS=week)
         stc.save()
-        list_id.append(id)
-        keys.append(good.idG)
+        ids_stock.append(id)
+        keys_stock.append(good.idG)
 
     StockFormSet = modelformset_factory(Stock, fields=['quanS', ], labels={'quanS': 'Q', }, extra=0)
 
     if request.method == 'POST':
-        q=request.POST
-        formset = StockFormSet(request.POST, queryset=Stock.objects.filter(idS__in=list_id))
-        if formset.is_valid():
-            formset.save()
-            messages.success(request, 'Stock edited')
-            return HttpResponseRedirect(request.path_info)
+        if 'submitS' in request.POST:
+            formset_stock = StockFormSet(request.POST, queryset=Stock.objects.filter(idS__in=ids_stock))
+            if formset_stock.is_valid():
+                formset_stock.save()
+                messages.success(request, 'Stock edited')
+                return HttpResponseRedirect(request.path_info)
+        if 'submitV' in request.POST:
+            if week.week == 1:
+                formset_validate = ChangeUser_1(request.POST, instance=User.objects.get(username__exact=username))
+            else:
+                formset_validate = ChangeUser(request.POST, instance=User.objects.get(username__exact=username))
+            if formset_validate.is_valid():
+                formset_validate.save()
+                user = User.objects.get(username__exact=username)
+                user.save()
+                messages.success(request, 'Change effective')
+                return HttpResponseRedirect(request.path_info)
     else:
-        formset = StockFormSet(queryset=Stock.objects.filter(idS__in=list_id))
+        formset_stock = StockFormSet(queryset=Stock.objects.filter(idS__in=ids_stock))
+        if week.week == 1:
+            form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
+        else:
+            form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
 
     context = {
         'goods': goods,
         'user': user,
         'group': group,
         'week': week,
-        'dict_f': dict_f,
-        'formset': formset,
+        'dict_stock': dict_stock,
+        'formset_stock': formset_stock,
+        'form_validate': form_validate,
     }
-    formlayout(formset, keys, dict_f)
-    context.update({'formset': formset})
-    return render(request, 'week/stock_supp_a.html', context=context)
-
-
-@user_passes_test(suppliers_a)
-def buy_supp_a(request, week, username):
-    pass
+    formlayout(formset_stock, keys_stock, dict_stock)
+    context.update({'formset_stock': formset_stock})
+    return render(request, 'week/supp_a.html', context=context)
 
 def notallowed(request):
     return render(request, 'week/notallowed.html')

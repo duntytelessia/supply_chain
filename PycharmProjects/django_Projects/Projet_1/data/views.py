@@ -138,7 +138,7 @@ def initialize(request):
         good_m4.save()
         good_f1 = Goods(idG='F1', nameG='Beef jerky', durG=7)
         good_f1.save()
-        good_f2 = Goods(idG='F2', nameG='juciy pork', durG=7)
+        good_f2 = Goods(idG='F2', nameG='juicy pork', durG=7)
         good_f2.save()
 
 

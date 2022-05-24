@@ -1,0 +1,30 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block content %}
+<h1> Control Tower Interface</h1>
+<h2> Week {{ week }} </h2>
+<h3> {{ user.username }}</h3>
+<h4> Codename : {{ user.codename }} </h4> <h4> Role : {{group}} </h4>
+<h5> Funds : {{ user.funds }}</h5>
+
+<h3> Stock </h3>
+<form method="post">
+    {{ formset_stock.management_form }}
+    {% csrf_token %}
+    {% for good in goods %}
+        {% with b=dict_stock|keyvalue:good.idG %}
+        {{ good.nameG}}
+        {{ b.as_p }}
+        {% endwith %}
+    {% endfor %}
+    <input type="submit" name="submitS" value="Edit">
+</form>
+--------------------------------------------------------------------------
+<h3> Validate </h3>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form_validate.as_p }}
+    <input type="submit" name="submitV" value="Edit">
+</form>
+{% endblock %}

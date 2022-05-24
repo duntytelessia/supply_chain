@@ -3,7 +3,7 @@
 {% block content %}
 <h1> Control Tower Interface</h1>
 <h2> Week {{ week }} </h2>
-    <form method="post" action="endpoint1">
+    <form method="post">
         {{ formset_a.management_form }}
         {% csrf_token %}
         <table>
@@ -32,7 +32,7 @@
     </form>
 -----------------------------
 
-    <form method="post" action="endpoint2">
+    <form method="post">
         {{ formset_b.management_form }}
         {% csrf_token %}
         <table>
@@ -60,7 +60,7 @@
         <input type="submit" name="submitB" value="Edit">
     </form>
 -----------------------------------------------------------
-<form method="post" action="endpoint3">
+<form method="post">
         {{ formset_a1.management_form }}
         {% csrf_token %}
         <table>
