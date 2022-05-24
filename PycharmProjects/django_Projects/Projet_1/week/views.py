@@ -157,6 +157,9 @@ def modify_as_controltower(request, week):
 def suppliers_a(user):
     return (user.groups.first().name == 'Suppliers_A')
 
+def fact(user):
+    return (user.groups.first().name == 'Factories')
+
 @user_passes_test(suppliers_a)
 def supp_a(request, week, username):
     goods = Goods.objects.filter(idG__in=['R1', 'R3', 'P1', 'P3'])
@@ -223,6 +226,140 @@ def supp_a(request, week, username):
     formlayout(formset_stock, keys_stock, dict_stock)
     context.update({'formset_stock': formset_stock})
     return render(request, 'week/supp_a.html', context=context)
+
+@user_passes_test(fact)
+def fact(request, week, username):
+    goods = Goods.objects.filter(idG__in=['P1', 'P2', 'P3', 'P4', 'F1', 'F2'])
+    user = User.objects.get(username__exact=username)
+    group = user.groups.all().first()
+    week = Week.objects.get(week__exact=week)
+    ids_stock = []
+    keys_stock = []
+    dict_stock = {}
+
+    warehouses = User.objects.filter(groups__name__exact='Warehouses')
+    goods_b = Goods.objects.filter(idG__in=['F1', 'F2'])
+    seller = request.user
+    list_b = []
+    dict_b = {}
+    keys_b = []
+    suppliers = User.objects.filter(groups__name__startswith='Suppliers')
+    goods_a1 = Goods.objects.filter(idG__in=['P1', 'P2', 'P3', 'P4'])
+    buyer1 = request.user
+    list_a1 = []
+    dict_a1 = {}
+    keys_a1 = []
+
+    # form layout
+    def formlayout(formset, keys, dict):
+        i = 0
+        for f in formset:
+            dict.update({keys[i]: f})
+            i += 1
+
+    for buyer in warehouses:
+        for good in goods_b:
+            id = seller.codename + buyer.codename + good.idG + str(week.week)
+            if Transaction.objects.filter(idT__exact=id).exists():
+                tran = Transaction.objects.get(idT__exact=id)
+            else:
+                tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer, dateT=week)
+            tran.save()
+            list_b.append(id)
+            keys_b.append(buyer.codename + good.idG)
+
+    for seller in suppliers:
+        for good in goods_a1:
+            id = seller.codename + buyer1.codename + good.idG + str(week.week)
+            if Order.objects.filter(idO__exact=id).exists():
+                order = Order.objects.get(idO__exact=id)
+            else:
+                order = Order(idO=id, sellerO=seller, goods=good, buyerO=buyer1, dateO=week)
+            order.save()
+            list_a1.append(id)
+            keys_a1.append(seller.codename + good.idG)
+
+    for good in goods:
+        id = user.codename + good.idG + str(week.week)
+        if Stock.objects.filter(idS__exact=id).exists():
+            stc = Stock.objects.get(idS__exact=id)
+        else:
+            stc = Stock(idS=id, goods=good, idU=user, dateS=week)
+        stc.save()
+        ids_stock.append(id)
+        keys_stock.append(good.idG)
+
+    StockFormSet = modelformset_factory(Stock, fields=['quanS', ], labels={'quanS': 'Q', }, extra=0)
+    TransactionFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceT'],
+                                              labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
+    OrderFormSet = modelformset_factory(Order, fields=['quanO'],
+                                        labels={'quanO': 'Q'}, extra=0)
+
+
+    if request.method == 'POST':
+        if 'submitS' in request.POST:
+            formset_stock = StockFormSet(request.POST, queryset=Stock.objects.filter(idS__in=ids_stock))
+            if formset_stock.is_valid():
+                formset_stock.save()
+                messages.success(request, 'Stock edited')
+                return HttpResponseRedirect(request.path_info)
+        if 'submitV' in request.POST:
+            if week.week == 1:
+                formset_validate = ChangeUser_1(request.POST, instance=User.objects.get(username__exact=username))
+            else:
+                formset_validate = ChangeUser(request.POST, instance=User.objects.get(username__exact=username))
+            if formset_validate.is_valid():
+                formset_validate.save()
+                user = User.objects.get(username__exact=username)
+                user.save()
+                messages.success(request, 'Change effective')
+
+        if 'submitB' in request.POST:
+            formset_b = TransactionFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=list_b))
+            if formset_b.is_valid():
+                formset_b.save()
+                messages.success(request, 'Transaction edited')
+                return HttpResponseRedirect(request.path_info)
+            if 'submitA1' in request.POST:
+                formset_a1 = OrderFormSet(request.POST, queryset=Order.objects.filter(idO__in=list_a1))
+                if formset_a1.is_valid():
+                    formset_a1.save()
+                    messages.success(request, 'Order edited')
+                return HttpResponseRedirect(request.path_info)
+    else:
+        formset_stock = StockFormSet(queryset=Stock.objects.filter(idS__in=ids_stock))
+        formset_b = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_b))
+        formset_a1 = OrderFormSet(queryset=Order.objects.filter(idO__in=list_a1))
+        if week.week == 1:
+            form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
+        else:
+            form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
+
+    context = {
+        'goods': goods,
+        'user': user,
+        'group': group,
+        'week': week,
+        'dict_stock': dict_stock,
+        'formset_stock': formset_stock,
+        'form_validate': form_validate,
+        'suppliers': suppliers,
+        'goods_b': goods_b,
+        'dict_b': dict_b,
+        'messages': messages,
+        'warehouses': warehouses,
+        'goods_a1': goods_a1,
+        'dict_a1': dict_a1,
+    }
+    formlayout(formset_stock, keys_stock, dict_stock)
+    context.update({'formset_stock': formset_stock})
+    formlayout(formset_b, keys_b, dict_b)
+    context.update({'formset_b': formset_b})
+    formlayout(formset_a1, keys_a1, dict_a1)
+    context.update({'formset_a1': formset_a1})
+
+    return render(request, 'week/fact.html', context=context)
+
 
 def notallowed(request):
     return render(request, 'week/notallowed.html')
