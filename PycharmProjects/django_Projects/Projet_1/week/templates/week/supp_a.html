@@ -11,13 +11,38 @@
 <form method="post">
     {{ formset_stock.management_form }}
     {% csrf_token %}
+    <table>
     {% for good in goods %}
+        <tr>
         {% with b=dict_stock|keyvalue:good.idG %}
-        {{ good.nameG}}
-        {{ b.as_p }}
+            <td> {{ good.nameG}} </td>
+            <td> {{ b.as_p }} </td>
         {% endwith %}
+        </tr>
     {% endfor %}
+    </table>
     <input type="submit" name="submitS" value="Edit">
+</form>
+--------------------------------------------------------------------------
+<h3> Buy </h3>
+<form method="post">
+    {{ formset_buy.management_form }}
+    {% csrf_token %}
+    <table>
+    {% for good in raw_goods %}
+        <tr>
+            <td> {{ good.nameG}} </td>
+            {% with tran=dict_info_buy|keyvalue:good.idG %}
+            <td> Quantity : {{ tran.quanT }}</td>
+            <td> Price : {{ tran.priceT }}</td>
+            {% endwith %}
+            {% with b=dict_buy|keyvalue:good.idG %}
+            <td> {{ b.as_p }} </td>
+            {% endwith %}
+        </tr>
+    {% endfor %}
+    </table>
+    <input type="submit" name="submitB" value="Edit">
 </form>
 --------------------------------------------------------------------------
 <h3> Validate </h3>

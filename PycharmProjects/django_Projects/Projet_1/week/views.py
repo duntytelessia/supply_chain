@@ -159,13 +159,16 @@ def suppliers_a(user):
 
 @user_passes_test(suppliers_a)
 def supp_a(request, week, username):
+    # initializations
     goods = Goods.objects.filter(idG__in=['R1', 'R3', 'P1', 'P3'])
+    raw_goods = Goods.objects.filter(idG__in=['R1', 'R3'])
     user = User.objects.get(username__exact=username)
     group = user.groups.all().first()
     week = Week.objects.get(week__exact=week)
-    ids_stock = []
-    keys_stock = []
-    dict_stock = {}
+    ids_stock, ids_buy = [], []
+    keys_stock, keys_buy = [], []
+    dict_stock, dict_buy = {}, {}
+    dict_info_buy = {}
 
     # form layout
     def formlayout(formset, keys, dict):
@@ -174,6 +177,7 @@ def supp_a(request, week, username):
             dict.update({keys[i]: f})
             i += 1
 
+    # create stock
     for good in goods:
         id = user.codename + good.idG + str(week.week)
         if Stock.objects.filter(idS__exact=id).exists():
@@ -184,13 +188,28 @@ def supp_a(request, week, username):
         ids_stock.append(id)
         keys_stock.append(good.idG)
 
+    # validate transaction
+    for good in raw_goods:
+        id = 'A' + user.codename + good.idG + str(week.week)
+        ids_buy.append(id)
+        keys_buy.append(good.idG)
+        dict_info_buy.update({good.idG: Transaction.objects.get(idT__exact=id)})
+
+    # formset creation
     StockFormSet = modelformset_factory(Stock, fields=['quanS', ], labels={'quanS': 'Q', }, extra=0)
+    BuyFormSet = modelformset_factory(Transaction, fields=['verifiedT', ], labels={'verifiedT': 'confirm'}, extra=0)
 
     if request.method == 'POST':
         if 'submitS' in request.POST:
             formset_stock = StockFormSet(request.POST, queryset=Stock.objects.filter(idS__in=ids_stock))
             if formset_stock.is_valid():
                 formset_stock.save()
+                messages.success(request, 'Stock edited')
+                return HttpResponseRedirect(request.path_info)
+        if 'submitB' in request.POST:
+            formset_buy = BuyFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_buy))
+            if formset_buy.is_valid():
+                formset_buy.save()
                 messages.success(request, 'Stock edited')
                 return HttpResponseRedirect(request.path_info)
         if 'submitV' in request.POST:
@@ -206,6 +225,7 @@ def supp_a(request, week, username):
                 return HttpResponseRedirect(request.path_info)
     else:
         formset_stock = StockFormSet(queryset=Stock.objects.filter(idS__in=ids_stock))
+        formset_buy = BuyFormSet(queryset=Transaction.objects.filter(idT__in=ids_buy))
         if week.week == 1:
             form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
         else:
@@ -213,16 +233,22 @@ def supp_a(request, week, username):
 
     context = {
         'goods': goods,
+        'raw_goods': raw_goods,
         'user': user,
         'group': group,
         'week': week,
+        'dict_info_buy': dict_info_buy,
         'dict_stock': dict_stock,
+        'dict_buy': dict_buy,
         'formset_stock': formset_stock,
+        'formset_buy': formset_buy,
         'form_validate': form_validate,
     }
     formlayout(formset_stock, keys_stock, dict_stock)
-    context.update({'formset_stock': formset_stock})
+    formlayout(formset_buy, keys_buy, dict_buy)
+
     return render(request, 'week/supp_a.html', context=context)
+
 
 def notallowed(request):
     return render(request, 'week/notallowed.html')
