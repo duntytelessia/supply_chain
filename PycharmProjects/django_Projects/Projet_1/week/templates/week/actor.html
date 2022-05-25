@@ -26,6 +26,76 @@
 --------------------------------------------------------------------------
 
 <h3> Buy </h3>
+{% if fact %}
+<form method="post">
+        {{ formset_buy_1.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_buy_1 %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in seller_buy_1 %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_buy_1 %}
+                <td>
+                    {% with a=user.codename|add:good.idG %}
+                        {% with tran_1=dict_info_buy_1|keyvalue:a %}
+                            Quantity : {{ tran_1.quanT }}
+                            Price : {{ tran_1.priceT }}
+                        {% endwith %}
+                    {% endwith %}
+                    {% with a=user.codename|add:good.idG %}
+                        {% with b=dict_buy_1|keyvalue:a %}
+                            {{ b.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitB_1" value="Edit">
+    </form>
+<form method="post">
+        {{ formset_buy_2.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_buy_2 %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in seller_buy_2 %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_buy_2 %}
+                <td>
+                    {% with a=user.codename|add:good.idG %}
+                        {% with tran_2=dict_info_buy_2|keyvalue:a %}
+                            Quantity : {{ tran_2.quanT }}
+                            Price : {{ tran_2.priceT }}
+                        {% endwith %}
+                    {% endwith %}
+                    {% with a=user.codename|add:good.idG %}
+                        {% with b=dict_buy_2|keyvalue:a %}
+                            {{ b.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitB_2" value="Edit">
+    </form>
+{% else %}
 <form method="post">
         {{ formset_buy.management_form }}
         {% csrf_token %}
@@ -60,8 +130,66 @@
 
         <input type="submit" name="submitB" value="Edit">
     </form>
+{% endif %}
 --------------------------------------------------------------------------
 {% if not supp %}
+{% if fact %}
+<h3> Order </h3>
+<form method="post">
+        {{ formset_order_1.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_buy_1 %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in seller_buy_1 %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_buy_1 %}
+                <td> {% with a=user.codename|add:good.idG %}
+                        {% with b=dict_order_1|keyvalue:a %}
+                            {{ b.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitO_1" value="Edit">
+    </form>
+<form method="post">
+        {{ formset_order_2.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_buy_2 %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in seller_buy_2 %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_buy_2 %}
+                <td> {% with a=user.codename|add:good.idG %}
+                        {% with b=dict_order_2|keyvalue:a %}
+                            {{ b.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitO_2" value="Edit">
+    </form>
+{% else %}
 <h3> Order </h3>
 <form method="post">
         {{ formset_order.management_form }}
@@ -90,7 +218,7 @@
 
         <input type="submit" name="submitO" value="Edit">
     </form>
-
+{% endif %}
 --------------------------------------------------------------------------
 {% endif %}
 <h3> Sell </h3>

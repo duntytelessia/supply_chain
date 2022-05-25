@@ -177,10 +177,16 @@ def actor(request, week, username):
         goods_stock = Goods.objects.filter(idG__in=['P1', 'P2', 'P3', 'P4', 'F1', 'F2'])
         goods_buy = Goods.objects.filter(idG__in=['P1', 'P2', 'P3', 'P4'])
         seller_buy = User.objects.filter(groups__name__startswith='Supplier')
+        goods_buy_1 = Goods.objects.filter(idG__in=['P1', 'P3'])
+        seller_buy_1 = User.objects.filter(groups__name__exact='Suppliers_A')
+        goods_buy_2 = Goods.objects.filter(idG__in=['P2', 'P4'])
+        seller_buy_2 = User.objects.filter(groups__name__exact='Suppliers_B')
         buyer_buy = request.user
         goods_sales = Goods.objects.filter(idG__in=['F1', 'F2'])
         seller_sales = request.user
         buyer_sales = User.objects.filter(groups__name__exact='Warehouses')
+        ids_order_1, ids_order_2, keys_order_1, keys_order_2, dict_order_1, dict_order_2 = [], [], [], [], {}, {}
+        ids_buy_1, keys_buy_1, dict_info_buy_1, ids_buy_2, keys_buy_2, dict_info_buy_2, dict_buy_1, dict_buy_2 = [], [], {}, [], [], {}, {}, {}
     elif group.name == 'Warehouses':
         goods_stock = Goods.objects.filter(idG__in=['F1', 'F2'])
         goods_buy = Goods.objects.filter(idG__in=['F1', 'F2'])
@@ -210,7 +216,7 @@ def actor(request, week, username):
     dict_stock, dict_buy, dict_order, dict_sales = {}, {}, {}, {}
     dict_info_buy = {}
     supp = (group.name == 'Suppliers_A' or group.name == 'Suppliers_B')
-
+    fact = (group.name == 'Factories')
     # form layout
     def formlayout(formset, keys, dict):
         i = 0
@@ -230,21 +236,70 @@ def actor(request, week, username):
         keys_stock.append(good.idG)
 
     # validate transaction
-    for good in goods_buy:
-        for seller in seller_buy:
-            id = seller.codename + buyer_buy.codename + good.idG + str(week.week)
-            if Transaction.objects.filter(idT__exact=id).exists():
-                tran = Transaction.objects.get(idT__exact=id)
-            else:
-                tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer_buy, dateT=week)
-            tran.save()
-            ids_buy.append(id)
-            keys_buy.append(seller.codename + good.idG)
-            dict_info_buy.update({seller.codename + good.idG: Transaction.objects.get(idT__exact=id)})
-
+    if group.name == "Factories":
+        for good in goods_buy_1:
+            for seller in seller_buy_1:
+                id = seller.codename + buyer_buy.codename + good.idG + str(week.week)
+                if Transaction.objects.filter(idT__exact=id).exists():
+                    tran_1 = Transaction.objects.get(idT__exact=id)
+                else:
+                    tran_1 = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer_buy, dateT=week)
+                tran_1.save()
+                ids_buy_1.append(id)
+                keys_buy_1.append(seller.codename + good.idG)
+                dict_info_buy_1.update({seller.codename + good.idG: Transaction.objects.get(idT__exact=id)})
+        for good in goods_buy_2:
+            for seller in seller_buy_2:
+                id = seller.codename + buyer_buy.codename + good.idG + str(week.week)
+                if Transaction.objects.filter(idT__exact=id).exists():
+                    tran_2 = Transaction.objects.get(idT__exact=id)
+                else:
+                    tran_2 = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer_buy, dateT=week)
+                tran_2.save()
+                ids_buy_2.append(id)
+                keys_buy_2.append(seller.codename + good.idG)
+                dict_info_buy_2.update({seller.codename + good.idG: Transaction.objects.get(idT__exact=id)})
+        ids_buy = ids_buy_1 + ids_buy_2
+        keys_buy = keys_buy_1 + keys_buy_2
+        dict_info_buy = dict_info_buy_1 | dict_info_buy_2
+    else:
+        for good in goods_buy:
+            for seller in seller_buy:
+                id = seller.codename + buyer_buy.codename + good.idG + str(week.week)
+                if Transaction.objects.filter(idT__exact=id).exists():
+                    tran = Transaction.objects.get(idT__exact=id)
+                else:
+                    tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer_buy, dateT=week)
+                tran.save()
+                ids_buy.append(id)
+                keys_buy.append(seller.codename + good.idG)
+                dict_info_buy.update({seller.codename + good.idG: Transaction.objects.get(idT__exact=id)})
 
     # create order
-    if group.name is not 'Suppliers_A' or group.name is not 'Suppliers_B':
+    if group.name == "Factories":
+        for seller in seller_buy_1:
+            for good in goods_buy_1:
+                id = seller.codename + buyer_buy.codename + good.idG + str(week.week)
+                if Order.objects.filter(idO__exact=id).exists():
+                    order_1 = Order.objects.get(idO__exact=id)
+                else:
+                    order_1 = Order(idO=id, sellerO=seller, goods=good, buyerO=buyer_buy, dateO=week)
+                order_1.save()
+                ids_order_1.append(id)
+                keys_order_1.append(seller.codename + good.idG)
+        for seller in seller_buy_2:
+            for good in goods_buy_2:
+                id = seller.codename + buyer_buy.codename + good.idG + str(week.week)
+                if Order.objects.filter(idO__exact=id).exists():
+                    order_2 = Order.objects.get(idO__exact=id)
+                else:
+                    order_2 = Order(idO=id, sellerO=seller, goods=good, buyerO=buyer_buy, dateO=week)
+                order_2.save()
+                ids_order_2.append(id)
+                keys_order_2.append(seller.codename + good.idG)
+        ids_order = ids_order_1 + ids_order_2
+        keys_order = keys_order_1 + keys_order_2
+    elif group.name is not 'Suppliers_A' or group.name is not 'Suppliers_B':
         for seller in seller_buy:
             for good in goods_buy:
                 id = seller.codename + buyer_buy.codename + good.idG + str(week.week)
@@ -269,12 +324,26 @@ def actor(request, week, username):
             keys_sales.append(buyer.codename + good.idG)
 
     # create formsets
-    StockFormSet = modelformset_factory(Stock, fields=['quanS', ], labels={'quanS': 'Q', }, extra=0)
-    BuyFormSet = modelformset_factory(Transaction, fields=['verifiedT', ], labels={'verifiedT': 'confirm'}, extra=0)
-    OrderFormSet = modelformset_factory(Order, fields=['quanO'],
-                                        labels={'quanO': 'Q'}, extra=0)
-    SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceT'],
-                                              labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
+    if group.name == "Factories":
+        StockFormSet = modelformset_factory(Stock, fields=['quanS', ], labels={'quanS': 'Q', }, extra=0)
+        BuyFormSet_1 = modelformset_factory(Transaction, fields=['verifiedT', ], labels={'verifiedT': 'confirm'},
+                                            extra=0)
+        BuyFormSet_2 = modelformset_factory(Transaction, fields=['verifiedT', ], labels={'verifiedT': 'confirm'},
+                                            extra=0)
+        OrderFormSet_1 = modelformset_factory(Order, fields=['quanO'],
+                                              labels={'quanO': 'Q'}, extra=0)
+        OrderFormSet_2 = modelformset_factory(Order, fields=['quanO'],
+                                              labels={'quanO': 'Q'}, extra=0)
+        SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceT'],
+                                            labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
+    else:
+
+        StockFormSet = modelformset_factory(Stock, fields=['quanS', ], labels={'quanS': 'Q', }, extra=0)
+        BuyFormSet = modelformset_factory(Transaction, fields=['verifiedT', ], labels={'verifiedT': 'confirm'}, extra=0)
+        OrderFormSet = modelformset_factory(Order, fields=['quanO'],
+                                            labels={'quanO': 'Q'}, extra=0)
+        SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceT'],
+                                                  labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
 
     # forms
     if request.method == 'POST':
@@ -284,18 +353,44 @@ def actor(request, week, username):
                 formset_stock.save()
                 messages.success(request, 'Stock edited')
                 return HttpResponseRedirect(request.path_info)
-        if 'submitB' in request.POST:
-            formset_buy = BuyFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_buy))
-            if formset_buy.is_valid():
-                formset_buy.save()
-                messages.success(request, 'Buys edited')
-                return HttpResponseRedirect(request.path_info)
-        if 'submitO' in request.POST:
-            formset_order = OrderFormSet(request.POST, queryset=Order.objects.filter(idO__in=ids_order))
-            if formset_order.is_valid():
-                formset_order.save()
-                messages.success(request, 'Order validated')
-                return HttpResponseRedirect(request.path_info)
+        if group.name == "Factories":
+            if 'submitB_1' in request.POST:
+                formset_buy_1 = BuyFormSet_1(request.POST, queryset=Transaction.objects.filter(idT__in=ids_buy_1))
+                if formset_buy_1.is_valid():
+                    formset_buy_1.save()
+                    messages.success(request, 'Buys edited')
+                    return HttpResponseRedirect(request.path_info)
+            if 'submitB_2' in request.POST:
+                formset_buy_2 = BuyFormSet_2(request.POST, queryset=Transaction.objects.filter(idT__in=ids_buy_2))
+                if formset_buy_2.is_valid():
+                    formset_buy_2.save()
+                    messages.success(request, 'Buys edited')
+                    return HttpResponseRedirect(request.path_info)
+            if 'submitO_1' in request.POST:
+                formset_order_1 = OrderFormSet_1(request.POST, queryset=Order.objects.filter(idO__in=ids_order_1))
+                if formset_order_1.is_valid():
+                    formset_order_1.save()
+                    messages.success(request, 'Order validated')
+                    return HttpResponseRedirect(request.path_info)
+            if 'submitO_2' in request.POST:
+                formset_order_2 = OrderFormSet_2(request.POST, queryset=Order.objects.filter(idO__in=ids_order_2))
+                if formset_order_2.is_valid():
+                    formset_order_2.save()
+                    messages.success(request, 'Order validated')
+                    return HttpResponseRedirect(request.path_info)
+        else:
+            if 'submitB' in request.POST:
+                formset_buy = BuyFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_buy))
+                if formset_buy.is_valid():
+                    formset_buy.save()
+                    messages.success(request, 'Buys edited')
+                    return HttpResponseRedirect(request.path_info)
+            if 'submitO' in request.POST:
+                formset_order = OrderFormSet(request.POST, queryset=Order.objects.filter(idO__in=ids_order))
+                if formset_order.is_valid():
+                    formset_order.save()
+                    messages.success(request, 'Order validated')
+                    return HttpResponseRedirect(request.path_info)
         if 'submitA' in request.POST:
             formset_sales = SalesFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
             if formset_sales.is_valid():
@@ -314,14 +409,34 @@ def actor(request, week, username):
                 messages.success(request, 'Change effective')
                 return HttpResponseRedirect(request.path_info)
     else:
+        if group.name == "Factories":
+            formset_buy_1 = BuyFormSet_1(queryset=Transaction.objects.filter(idT__in=ids_buy_1))
+            formset_buy_2 = BuyFormSet_2(queryset=Transaction.objects.filter(idT__in=ids_buy_2))
+            formset_order_1 = OrderFormSet_1(queryset=Order.objects.filter(idO__in=ids_order_1))
+            formset_order_2 = OrderFormSet_2(queryset=Order.objects.filter(idO__in=ids_order_2))
+        else:
+            formset_buy = BuyFormSet(queryset=Transaction.objects.filter(idT__in=ids_buy))
+            formset_order = OrderFormSet(queryset=Order.objects.filter(idO__in=ids_order))
         formset_stock = StockFormSet(queryset=Stock.objects.filter(idS__in=ids_stock))
-        formset_buy = BuyFormSet(queryset=Transaction.objects.filter(idT__in=ids_buy))
-        formset_order = OrderFormSet(queryset=Order.objects.filter(idO__in=ids_order))
         formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
         if week.week == 1:
             form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
         else:
             form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
+
+        # form layout
+        formlayout(formset_stock, keys_stock, dict_stock)
+        formlayout(formset_sales, keys_sales, dict_sales)
+        if group.name == "Factories":
+            formlayout(formset_buy_1, keys_buy_1, dict_buy_1)
+            formlayout(formset_buy_2, keys_buy_2, dict_buy_2)
+            formlayout(formset_order_1, keys_order_1, dict_order_1)
+            formlayout(formset_order_2, keys_order_2, dict_order_2)
+            dict_order = dict_order_1 | dict_order_2
+            dict_buy = dict_buy_1 | dict_buy_2
+        else:
+            formlayout(formset_buy, keys_buy, dict_buy)
+            formlayout(formset_order, keys_order, dict_order)
 
     # context
     context = {
@@ -339,18 +454,31 @@ def actor(request, week, username):
         'dict_sales': dict_sales,
         'dict_info_buy': dict_info_buy,
         'formset_stock': formset_stock,
-        'formset_buy': formset_buy,
         'formset_sales': formset_sales,
-        'formset_order': formset_order,
         'form_validate': form_validate,
-        'supp': supp
+        'supp': supp,
+        'fact': fact
     }
+    if group.name == "Factories":
+        context['dict_buy_1'] = dict_buy_1
+        context['dict_buy_2'] = dict_buy_2
+        context['goods_buy_1'] = goods_buy_1
+        context['goods_buy_2'] = goods_buy_2
+        context['seller_buy_1'] = seller_buy_1
+        context['seller_buy_2'] = seller_buy_2
+        context['dict_order_1'] = dict_order_1
+        context['dict_order_2'] = dict_order_2
+        context['dict_info_buy_1'] = dict_info_buy_1
+        context['dict_info_buy_2'] = dict_info_buy_2
+        context['formset_buy_1'] = formset_buy_1
+        context['formset_buy_2'] = formset_buy_2
+        context['formset_order_1'] = formset_order_1
+        context['formset_order_2'] = formset_order_2
+    else:
+        context['formset_buy'] = formset_buy
+        context['formset_order'] = formset_order
 
-    # form layout
-    formlayout(formset_stock, keys_stock, dict_stock)
-    formlayout(formset_buy, keys_buy, dict_buy)
-    formlayout(formset_order, keys_order, dict_order)
-    formlayout(formset_sales, keys_sales, dict_sales)
+
     return render(request, 'week/actor.html', context=context)
 
 
