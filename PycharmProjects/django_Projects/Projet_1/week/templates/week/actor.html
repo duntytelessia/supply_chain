@@ -7,6 +7,14 @@
 <h4> Codename : {{ user.codename }} </h4> <h4> Role : {{group}} </h4>
 <h5> Funds : {{ user.funds }}</h5>
 
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 <h3> Stock </h3>
 <form method="post">
     {{ formset_stock.management_form }}

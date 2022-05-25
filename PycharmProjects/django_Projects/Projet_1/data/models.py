@@ -6,7 +6,7 @@ from django.contrib.auth.models import AbstractUser
 class CustomUser(AbstractUser):
     validate = models.BooleanField(default=False)
     codename = models.CharField(max_length=10, default='A')
-    funds = models.PositiveIntegerField(default=0)
+    funds = models.FloatField(default=0)
 
 
 class Week(models.Model):

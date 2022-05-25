@@ -8,9 +8,13 @@
         <tr>
             <td> name </td>
             <td> <em> Actor Category </em> </td>
+            {% if not has_begun %}
             <td> Change actor category </td>
+            {% endif %}
             <td> Validate </td>
+            {% if not has_begun %}
             <td>  </td>
+            {% endif %}
         </tr>
     {% for user in all_users %}
         <tr>
@@ -18,10 +22,14 @@
             <td> {% if user.is_superuser %} <mark> admin </mark>    <!-- group or admin -->
                  {% else %} <em> {{ user.groups.all.0 }} </em> {% endif %} </td>
             <!-- changes the group of non-admin users -->
+            {% if not has_begun %}
             <td> {% if not user.is_superuser %} <p> <a href="cg/{{user}}"> change </a> </p> {% endif %} </td>
+            {% endif %}
             <td> {% if user.validate %} X {% endif %}</td> <!-- show X if the user agrees with his role -->
             <!-- deletes non-admin users -->
+            {% if not has_begun %}
             <td> {% if not user.is_superuser %} <a href="del/{{user}}"> delete user </a> {% endif %} </td>
+            {% endif %}
         </tr>
     {% endfor %}
     </table>
@@ -32,7 +40,11 @@
 </form>
 
 {% else %}
+{% if has_begun %}
+To go to the next week, you need all accounts in the simulation to be ready.
+{% else %}
 To begin the simulation, you need all registered accounts to which you assigned a group to be ready.
+{% endif %}
 <a href="validate_all"> Validate all </a>
 {% endif %}
 {% endblock %}

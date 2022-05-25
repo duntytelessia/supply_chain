@@ -1,5 +1,5 @@
 from django.urls import path
-from controltower.views import interface, change_group, del_user, valid, edit_good, validate_all, begin_simulation
+from controltower.views import *
 
 urlpatterns = [
     path('', interface, name='interface'),  # main page of control tower
@@ -8,5 +8,6 @@ urlpatterns = [
     path('valid/', valid, name='valid'),    # when admin has validated all actors
     path('valid/<str:idg>', edit_good, name='edit_good'),# to edit data of the good: idG
     path('validate_all', validate_all, name='validate_all'),
-    path('begin_simulation', begin_simulation, name='begin_simulation')
+    path('begin_simulation', begin_simulation, name='begin_simulation'),
+    path('new_week', new_week, name='new_week')
 ]
