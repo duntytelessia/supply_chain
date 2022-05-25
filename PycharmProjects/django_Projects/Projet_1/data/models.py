@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 
 
 #Utilisateur
@@ -57,3 +58,11 @@ class Transaction(models.Model):
     dateT = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
     priceT = models.FloatField(default=0)
     verifiedT = models.BooleanField(default=False)
+
+    def clean(self):
+        id_order = self.sellerT.codename + self.buyerT.codename + self.goods.idG + str(self.dateT.week - 1)
+        order_exists = Order.objects.filter(idO=id_order).exists()
+        if order_exists:
+            order = Order.objects.get(idO=id_order)
+            if self.quanT > order.quanO:
+                raise ValidationError("Quantity can't be greater than corresponding order")

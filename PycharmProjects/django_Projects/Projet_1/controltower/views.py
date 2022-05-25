@@ -190,4 +190,18 @@ def new_week(request):
             tran.sellerT.funds = new_funds
             tran.sellerT.save()
 
+    # new transactions from orders
+    orders = Order.objects.filter(dateO=last_week)
+    for order in orders:
+        id = order.sellerO.codename + order.buyerO.codename + order.goods.idG + str(new_week.week)
+        tran = Transaction(
+            idT=id,
+            sellerT=order.sellerO,
+            buyerT=order.buyerO,
+            quanT=order.quanO,
+            goods=order.goods,
+            dateT=new_week,
+        )
+        tran.save()
+
     return redirect('/')

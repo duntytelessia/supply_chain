@@ -29,7 +29,9 @@
         </tr>
     {% endfor %}
     </table>
+    {% if first_week %}
     <input type="submit" name="submitS" value="Edit">
+    {% endif %}
 </form>
 --------------------------------------------------------------------------
 
@@ -244,7 +246,13 @@
             <tr>
                 <td> {{user.codename}} </td>
                 {% for good in goods_sales %}
-                <td> {% with c=user.codename|add:good.idG %}
+                <td>
+                    {% with a=user.codename|add:good.idG %}
+                        {% with order=dict_info_sales|keyvalue:a %}
+                            Order: {{order.quanO}}
+                        {% endwith %}
+                    {% endwith %}
+                    {% with c=user.codename|add:good.idG %}
                         {% with d=dict_sales|keyvalue:c %}
                             {{ d.as_p }}
                         {% endwith %}
