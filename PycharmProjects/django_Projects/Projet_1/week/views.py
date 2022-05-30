@@ -408,8 +408,7 @@ def actor(request, week, username):
                 messages.success(request, 'Sales edited')
             else:
                 messages.error(request,
-                               'Sales Edit failed, be sure that the quantity of your '
-                               'transaction is lower than the quantity of the order')
+                               'Sales Edit failed. Plz check the stock or the order.')
             return HttpResponseRedirect(request.path_info)
         if 'submitV' in request.POST:
             if week.week == 1:
