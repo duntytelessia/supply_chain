@@ -162,6 +162,14 @@ def new_week(request):
     new_week = Week(week=last_week.week + 1)
     new_week.save()
     v_transactions = Transaction.objects.filter(dateT=last_week, verifiedT=True)
+
+    # create new stocks
+    stocks = Stock.objects.filter(dateS=last_week)
+    for stock in stocks:
+        id = stock.idU.codename + stock.goods.idG + str(new_week.week)
+        new_stock_buyer = Stock(idS=id, idU=stock.idU, goods=stock.goods, dateS=new_week, quanS=stock.quanS)
+        new_stock_buyer.save()
+
     for tran in v_transactions:
 
         if tran.buyerT.codename != 'A':
@@ -203,5 +211,92 @@ def new_week(request):
             dateT=new_week,
         )
         tran.save()
+
+    # goods transformations
+    suppliers_a = User.objects.filter(groups__name__exact='Suppliers_A')
+    suppliers_b = User.objects.filter(groups__name__exact='Suppliers_B')
+    factories = User.objects.filter(groups__name__exact='Factories')
+    for user in suppliers_a:
+        stock_raw_1 = Stock.objects.get(goods__idG__exact='R1', idU__exact=user, dateS=new_week)
+        stock_raw_3 = Stock.objects.get(goods__idG__exact='R3', idU__exact=user, dateS=new_week)
+        stock_product_1 = Stock.objects.get(goods__idG__exact='P1', idU__exact=user, dateS=new_week)
+        stock_product_3 = Stock.objects.get(goods__idG__exact='P3', idU__exact=user, dateS=new_week)
+
+        if stock_raw_1.quanS > user.maxT:
+            stock_product_1.quanS = stock_product_1.quanS + user.maxT
+            stock_raw_1.quanS = stock_raw_1.quanS - user.maxT
+        else:
+            stock_product_1.quanS = stock_product_1.quanS + stock_raw_1.quanS
+            stock_raw_1.quanS = 0
+        stock_raw_1.save()
+        stock_product_1.save()
+
+        if stock_raw_3.quanS > user.maxT:
+            stock_product_3.quanS = stock_product_3.quanS + user.maxT
+            stock_raw_3.quanS = stock_raw_3.quanS - user.maxT
+        else:
+            stock_product_3.quanS = stock_product_3.quanS + stock_raw_3.quanS
+            stock_raw_3.quanS = 0
+        stock_raw_3.save()
+        stock_product_3.save()
+
+    for user in suppliers_b:
+        stock_raw_2 = Stock.objects.get(goods__idG__exact='R2', idU__exact=user, dateS=new_week)
+        stock_raw_4 = Stock.objects.get(goods__idG__exact='R4', idU__exact=user, dateS=new_week)
+        stock_product_2 = Stock.objects.get(goods__idG__exact='P2', idU__exact=user, dateS=new_week)
+        stock_product_4 = Stock.objects.get(goods__idG__exact='P4', idU__exact=user, dateS=new_week)
+
+        if stock_raw_2.quanS > user.maxT:
+            stock_product_2.quanS = stock_product_2.quanS + user.maxT
+            stock_raw_2.quanS = stock_raw_2.quanS - user.maxT
+        else:
+            stock_product_2.quanS = stock_product_2.quanS + stock_raw_2.quanS
+            stock_raw_2.quanS = 0
+        stock_raw_2.save()
+        stock_product_2.save()
+
+        if stock_raw_4.quanS > user.maxT:
+            stock_product_4.quanS = stock_product_4.quanS + user.maxT
+            stock_raw_4.quanS = stock_raw_4.quanS - user.maxT
+        else:
+            stock_product_4.quanS = stock_product_4.quanS + stock_raw_4.quanS
+            stock_raw_4.quanS = 0
+        stock_raw_4.save()
+        stock_product_4.save()
+
+    for user in factories:
+        stock_product_1 = Stock.objects.get(goods__idG__exact='P1', idU__exact=user, dateS=new_week)
+        stock_product_2 = Stock.objects.get(goods__idG__exact='P2', idU__exact=user, dateS=new_week)
+        stock_product_3 = Stock.objects.get(goods__idG__exact='P3', idU__exact=user, dateS=new_week)
+        stock_product_4 = Stock.objects.get(goods__idG__exact='P4', idU__exact=user, dateS=new_week)
+        stock_final_1 = Stock.objects.get(goods__idG__exact='F1', idU__exact=user, dateS=new_week)
+        stock_final_2 = Stock.objects.get(goods__idG__exact='F2', idU__exact=user, dateS=new_week)
+
+        if stock_product_1.quanS > user.maxT and stock_product_2.quanS > user.maxT:
+            stock_final_1.quanS = stock_final_1.quanS + user.maxT
+            stock_product_1.quanS = stock_product_1.quanS - user.maxT
+            stock_product_2.quanS = stock_product_2.quanS - user.maxT
+        else:
+            quan = min(stock_product_1.quanS, stock_product_2.quanS)
+            stock_final_1.quanS = stock_final_1.quanS + quan
+            stock_product_1.quanS = stock_product_1.quanS - quan
+            stock_product_2.quanS = stock_product_2.quanS - quan
+        stock_final_1.save()
+        stock_product_1.save()
+        stock_product_2.save()
+
+        if stock_product_3.quanS > user.maxT and stock_product_4.quanS > user.maxT:
+            stock_final_2.quanS = stock_final_2.quanS + user.maxT
+            stock_product_3.quanS = stock_product_3.quanS - user.maxT
+            stock_product_4.quanS = stock_product_4.quanS - user.maxT
+        else:
+            quan = min(stock_product_3.quanS, stock_product_4.quanS)
+            stock_final_2.quanS = stock_final_2.quanS + quan
+            stock_product_3.quanS = stock_product_3.quanS - quan
+            stock_product_4.quanS = stock_product_4.quanS - quan
+        stock_final_2.save()
+        stock_product_3.save()
+        stock_product_4.save()
+
 
     return redirect('/')

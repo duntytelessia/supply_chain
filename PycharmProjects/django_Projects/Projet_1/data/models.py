@@ -8,6 +8,7 @@ class CustomUser(AbstractUser):
     validate = models.BooleanField(default=False)
     codename = models.CharField(max_length=10, default='A')
     funds = models.FloatField(default=0)
+    maxT = models.FloatField(default=1000)
 
 
 class Week(models.Model):
