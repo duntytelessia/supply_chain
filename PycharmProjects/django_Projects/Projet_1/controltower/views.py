@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from controltower.forms import GroupChangeForm, GoodChangeForm
 from data.models import Goods, Week, Order, Transaction, Stock
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -203,5 +204,7 @@ def new_week(request):
             dateT=new_week,
         )
         tran.save()
-
+    for user in User.objects.all():
+        user.validate = False
+        user.save()
     return redirect('/')
