@@ -12,7 +12,7 @@ class ChangeUser_1(ModelForm):
 
     class Meta:
         model = User
-        fields = ('funds', 'validate')
+        fields = ('funds', 'validate', 'maxT')
 
 
 class ChangeUser(ModelForm):

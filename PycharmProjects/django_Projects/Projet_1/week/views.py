@@ -156,6 +156,10 @@ def actor(request, week, username):
     group = user.groups.all().first()
     week = Week.objects.get(week__exact=week)
     first_week = (week.week == 1)
+
+    # get logistics out of this page
+    if group.name == 'Logistics':
+        return redirect('/')
     if group.name == 'Suppliers_A':
         goods_stock = Goods.objects.filter(idG__in=['R1', 'R3', 'P1', 'P3'])
         goods_buy = Goods.objects.filter(idG__in=['R1', 'R3'])
@@ -193,19 +197,11 @@ def actor(request, week, username):
         buyer_buy = request.user
         goods_sales = Goods.objects.filter(idG__in=['F1', 'F2'])
         seller_sales = request.user
-        buyer_sales = User.objects.filter(groups__name__exact='Logistics')
-    elif group.name == 'Logistics':
-        goods_stock = Goods.objects.filter(idG__in=['F1', 'F2'])
-        goods_buy = Goods.objects.filter(idG__in=['F1', 'F2'])
-        seller_buy = User.objects.filter(groups__name__exact='Warehouses')
-        buyer_buy = request.user
-        goods_sales = Goods.objects.filter(idG__in=['F1', 'F2'])
-        seller_sales = request.user
         buyer_sales = User.objects.filter(groups__name__exact='Distributors')
     elif group.name == 'Distributors':
         goods_stock = Goods.objects.filter(idG__in=['F1', 'F2'])
         goods_buy = Goods.objects.filter(idG__in=['F1', 'F2'])
-        seller_buy = User.objects.filter(groups__name__exact='Logistics')
+        seller_buy = User.objects.filter(groups__name__exact='Warehouses')
         buyer_buy = request.user
         goods_sales = Goods.objects.filter(idG__in=['F1', 'F2'])
         seller_sales = request.user

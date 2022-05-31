@@ -231,6 +231,7 @@
 {% endif %}
 --------------------------------------------------------------------------
 {% endif %}
+{% if not first_week %}
 <h3> Sell </h3>
     <form method="post">
         {{ formset_sales.management_form }}
@@ -267,7 +268,7 @@
     </form>
 
 -------------------------------------------------------------
-
+{% endif %}
 <h3> Validate </h3>
 
 <form method="post">

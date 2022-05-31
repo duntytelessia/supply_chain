@@ -58,7 +58,9 @@ class Transaction(models.Model):
     goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     dateT = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
     priceT = models.FloatField(default=0)
+    priceTransport = models.FloatField(default=0)
     verifiedT = models.BooleanField(default=False)
+    transporter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tran_transporter', default=1)
 
     def clean(self):
         if self.sellerT.codename != 'A':
