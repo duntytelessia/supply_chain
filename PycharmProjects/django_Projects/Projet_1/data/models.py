@@ -61,18 +61,17 @@ class Transaction(models.Model):
     verifiedT = models.BooleanField(default=False)
 
     def clean(self):
-        if self.sellerT.codename != 'A':
-            id_order = self.sellerT.codename + self.buyerT.codename + self.goods.idG + str(self.dateT.week - 1)
-            order_exists = Order.objects.filter(idO=id_order).exists()
-            if order_exists:
-                order = Order.objects.get(idO=id_order)
-                if self.quanT > order.quanO:
-                    raise ValidationError("Quantity can't be greater than corresponding order")
-            stock_exists = Stock.objects.filter(goods=self.goods, dateS=self.dateT, idU=self.sellerT).exists()
-            if stock_exists:
-                sto = Stock.objects.get(goods=self.goods, dateS=self.dateT, idU=self.sellerT)
-                if self.quanT > sto.quanS:
-                    self.quanT = sto.quanS
-                    raise ValidationError("Quantity is blocked by stock")
-            else:
-                raise ValidationError("No stock")
+        id_order = self.sellerT.codename + self.buyerT.codename + self.goods.idG + str(self.dateT.week - 1)
+        order_exists = Order.objects.filter(idO=id_order).exists()
+        if order_exists:
+            order = Order.objects.get(idO=id_order)
+            if self.quanT > order.quanO:
+                raise ValidationError("Quantity can't be greater than corresponding order")
+        stock_exists = Stock.objects.filter(goods=self.goods, dateS=self.dateT, idU=self.sellerT).exists()
+        if stock_exists:
+            sto = Stock.objects.get(goods=self.goods, dateS=self.dateT, idU=self.sellerT)
+            if self.quanT > sto.quanS:
+                self.quanT = sto.quanS
+                raise ValidationError("Quantity is blocked by stock")
+        else:
+            raise ValidationError("No stock")

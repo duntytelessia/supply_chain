@@ -122,9 +122,11 @@ def modify_as_controltower(request, week):
                 messages.success(request, 'Order edited')
                 return HttpResponseRedirect(request.path_info)
 
-    formset_a = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_a))
-    formset_b = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_b))
-    formset_a1 = OrderFormSet(queryset=Order.objects.filter(idO__in=list_a1))
+
+    else:
+        formset_a = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_a))
+        formset_b = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_b))
+        formset_a1 = OrderFormSet(queryset=Order.objects.filter(idO__in=list_a1))
     context = {
         'suppliers_a': suppliers_a,
         'suppliers_b': suppliers_b,
