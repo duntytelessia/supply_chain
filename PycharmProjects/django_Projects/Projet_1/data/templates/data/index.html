@@ -10,7 +10,7 @@
 <h2>  {{ all }} actors in this simulation </h2>
 
 <!-- List of all registered actors, classed by their group -->
-<h3> Suppliers A : ({{ s_a_count }})</h3>
+<h3><li> Suppliers A : ({{ s_a_count }})</li></h3>
 
 <ul>
 {% for user in suppliers_a %}
@@ -18,7 +18,7 @@
 {% endfor %}
 </ul>
 
-<h3> Suppliers B : ({{ s_b_count }})</h3>
+<h3> <li>Suppliers B : ({{ s_b_count }})</li></h3>
 
 <ul>
 {% for user in suppliers_b %}
@@ -26,7 +26,7 @@
 {% endfor %}
 </ul>
 
-<h3> Factories :({{ f_count }}) </h3>
+<h3><li> Factories :({{ f_count }}) </li></h3>
 
 <ul>
 {% for user in factories %}
@@ -34,7 +34,7 @@
 {% endfor %}
 </ul>
 
-<h3> Warehouses : ({{ w_count }})</h3>
+<h3><li> Warehouses : ({{ w_count }})</li></h3>
 
 <ul>
 {% for user in warehouses %}
@@ -42,7 +42,7 @@
 {% endfor %}
 </ul>
 
-<h3> Logistics : ({{ l_count }})</h3>
+<h3><li> Logistics : ({{ l_count }})</li></h3>
 
 <ul>
 {% for user in logistics %}
@@ -50,7 +50,7 @@
 {% endfor %}
 </ul>
 
-<h3> Distributors : ({{ d_count }})</h3>
+<h3><li> Distributors : ({{ d_count }})</li></h3>
 
 <ul>
 {% for user in distributors %}
@@ -58,10 +58,10 @@
 {% endfor %}
 </ul>
 
-<p> <a href="register/"> Create new account</a></p>
+<button class="button"><a href="register/"> Create new account</a> </button>
 
 {% if not group_exist %}
-<p> <a href="initialize/"> Initialize database </a></p>
+<button class="button"><a href="initialize/"> Initialize database </a></button>
 {% endif %}
 
 {% endblock %}
