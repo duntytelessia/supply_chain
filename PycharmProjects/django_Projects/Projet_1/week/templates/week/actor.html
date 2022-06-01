@@ -105,6 +105,43 @@
 
         <input type="submit" name="submitB_2" value="Edit">
     </form>
+{% elif dist %}
+<form method="post">
+        {{ formset_buy.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_buy %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in seller_buy %}
+            {% for logic in logistics %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_buy %}
+                <td>
+                    {% with a=user.codename|add:logic.codename %}
+                        {% with b=a|add:good.idG %}
+                            {% with tran=dict_info_buy|keyvalue:b %}
+                                Quantity : {{ tran.quanT }}
+                                Price : {{ tran.priceT }}
+                            {% endwith %}
+                            {% with f=dict_buy|keyvalue:b %}
+                                {{ f.as_p }}
+                            {% endwith %}
+                        {% endwith %}
+                    {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitB" value="Edit">
+    </form>
 {% else %}
 <form method="post">
         {{ formset_buy.management_form }}
@@ -232,6 +269,56 @@
 --------------------------------------------------------------------------
 {% endif %}
 {% if not first_week %}
+{% if ware %}
+<h3> Sell </h3>
+    <form method="post">
+        {{ formset_sales.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td>
+                {% for good in goods_sales %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for user in buyer_sales %}
+            <tr>
+                <td> {{user.codename}} </td>
+                {% for good in goods_sales %}
+                <td>
+                    {% with c=user.codename|add:good.idG %}
+                        {% with order=dict_info_sales|keyvalue:c %}
+                            Order: {{order.quanO}}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% for logic in logistics %}
+            <tr>
+                <td> {{ logic.codename }} </td>
+                {% for good in goods_sales %}
+                <td>
+                    {% with a=user.codename|add:logic.codename %}
+                        {% with b=a|add:good.idG %}
+                            {% with price=dict_info_transport|keyvalue:b %}
+                                Tprice: {{price.priceTransport}}
+                            {% endwith %}
+                            {% with c=dict_sales|keyvalue:b %}
+                                {{ c.as_p }}
+                            {% endwith %}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitA" value="Edit">
+    </form>
+{% else %}
 <h3> Sell </h3>
     <form method="post">
         {{ formset_sales.management_form }}
@@ -266,7 +353,7 @@
 
         <input type="submit" name="submitA" value="Edit">
     </form>
-
+{% endif %}
 -------------------------------------------------------------
 {% endif %}
 <h3> Validate </h3>

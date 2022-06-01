@@ -156,6 +156,7 @@ def actor(request, week, username):
     group = user.groups.all().first()
     week = Week.objects.get(week__exact=week)
     first_week = (week.week == 1)
+    logistics = User.objects.filter(groups__name__exact='Logistics')
 
     # get logistics out of this page
     if group.name == 'Logistics':
@@ -211,8 +212,11 @@ def actor(request, week, username):
     dict_stock, dict_buy, dict_order, dict_sales = {}, {}, {}, {}
     dict_info_buy = {}
     dict_info_sales = {}
+    dict_info_transport = {}
     supp = (group.name == 'Suppliers_A' or group.name == 'Suppliers_B')
     fact = (group.name == 'Factories')
+    ware = (group.name == 'Warehouses')
+    dist = (group.name == 'Distributors')
 
     # form layout
     def formlayout(formset, keys, dict):
@@ -259,6 +263,20 @@ def actor(request, week, username):
         ids_buy = ids_buy_1 + ids_buy_2
         keys_buy = keys_buy_1 + keys_buy_2
         dict_info_buy = dict_info_buy_1 | dict_info_buy_2
+    elif group.name == 'Distributors':
+        for good in goods_buy:
+            for seller in seller_buy:
+                for logic in logistics:
+                    id = seller.codename + buyer_buy.codename + good.idG + str(week.week) + '-' + logic.codename
+                    if Transaction.objects.filter(idT__exact=id).exists():
+                        tran = Transaction.objects.get(idT__exact=id)
+                    else:
+                        tran = Transaction(idT=id, sellerT=seller, goods=good,
+                                           buyerT=buyer_buy, dateT=week, transporter=logic)
+                    tran.save()
+                    ids_buy.append(id)
+                    keys_buy.append(seller.codename + logic.codename + good.idG)
+                    dict_info_buy.update({seller.codename + logic.codename + good.idG: Transaction.objects.get(idT__exact=id)})
     else:
         for good in goods_buy:
             for seller in seller_buy:
@@ -309,23 +327,45 @@ def actor(request, week, username):
                 keys_order.append(seller.codename + good.idG)
 
     # create transaction
-    for buyer in buyer_sales:
-        for good in goods_sales:
-            id = seller_sales.codename + buyer.codename + good.idG + str(week.week)
-            id_order = seller_sales.codename + buyer.codename + good.idG + str(week.week - 1)
-            order_exists = Order.objects.filter(idO=id_order).exists()
-            if Transaction.objects.filter(idT__exact=id).exists():
-                tran = Transaction.objects.get(idT__exact=id)
-            else:
-                tran = Transaction(idT=id, sellerT=seller_sales, goods=good, buyerT=buyer, dateT=week)
-            tran.save()
-            ids_sales.append(id)
-            keys_sales.append(buyer.codename + good.idG)
-            if order_exists:
-                order = Order.objects.get(idO__exact=id_order)
-                dict_info_sales.update({buyer.codename + good.idG: order})
-            else:
-                dict_info_sales.update({buyer.codename + good.idG: ' '})
+    if group.name == 'Warehouses':
+        for buyer in buyer_sales:
+            for good in goods_sales:
+                for logic in logistics:
+                    id = seller_sales.codename + buyer.codename + good.idG + str(week.week) + '-' + logic.codename
+                    if Transaction.objects.filter(idT__exact=id).exists():
+                        tran = Transaction.objects.get(idT__exact=id)
+                    else:
+                        tran = Transaction(idT=id, sellerT=seller_sales, goods=good,
+                                           buyerT=buyer, dateT=week, transporter=logic)
+                    tran.save()
+                    ids_sales.append(id)
+                    keys_sales.append(buyer.codename + logic.codename + good.idG)
+                    dict_info_transport.update({buyer.codename + logic.codename + good.idG: tran})
+                id_order = seller_sales.codename + buyer.codename + good.idG + str(week.week - 1)
+                order_exists = Order.objects.filter(idO=id_order).exists()
+                if order_exists:
+                    order = Order.objects.get(idO__exact=id_order)
+                    dict_info_sales.update({buyer.codename + good.idG: order})
+                else:
+                    dict_info_sales.update({buyer.codename + good.idG: ' '})
+    else:
+        for buyer in buyer_sales:
+            for good in goods_sales:
+                id = seller_sales.codename + buyer.codename + good.idG + str(week.week)
+                id_order = seller_sales.codename + buyer.codename + good.idG + str(week.week - 1)
+                order_exists = Order.objects.filter(idO=id_order).exists()
+                if Transaction.objects.filter(idT__exact=id).exists():
+                    tran = Transaction.objects.get(idT__exact=id)
+                else:
+                    tran = Transaction(idT=id, sellerT=seller_sales, goods=good, buyerT=buyer, dateT=week)
+                tran.save()
+                ids_sales.append(id)
+                keys_sales.append(buyer.codename + good.idG)
+                if order_exists:
+                    order = Order.objects.get(idO__exact=id_order)
+                    dict_info_sales.update({buyer.codename + good.idG: order})
+                else:
+                    dict_info_sales.update({buyer.codename + good.idG: ' '})
 
     # create formsets
     if group.name == "Factories":
@@ -462,11 +502,15 @@ def actor(request, week, username):
         'dict_sales': dict_sales,
         'dict_info_buy': dict_info_buy,
         'dict_info_sales': dict_info_sales,
+        'dict_info_transport': dict_info_transport,
         'formset_stock': formset_stock,
         'formset_sales': formset_sales,
         'form_validate': form_validate,
+        'logistics': logistics,
         'supp': supp,
-        'fact': fact
+        'fact': fact,
+        'ware': ware,
+        'dist': dist,
     }
     if group.name == "Factories":
         context['dict_buy_1'] = dict_buy_1
