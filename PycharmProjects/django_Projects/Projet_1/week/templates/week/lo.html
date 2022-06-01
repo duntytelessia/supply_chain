@@ -1,0 +1,65 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block content %}
+<h1> Control Tower Interface</h1>
+<h2> Week {{ week }} </h2>
+<h3> {{ user.username }}</h3>
+<h4> Codename : {{ user.codename }} </h4> <h4> Role : {{group}} </h4>
+<h5> Funds : {{ user.funds }}</h5>
+
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if not first_week %}
+<h3> Transaction </h3>
+    <form method="post">
+        {{ formset_sales.management_form }}
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td> </td><td> </td>
+                {% for good in goods_sales %}
+                <td> {{good.nameG}} </td>
+                {% endfor %}
+            </tr>
+            {% for use in seller_sales %}
+            <tr>
+                </tr>
+            {% for user in buyer_sales %}
+            <tr>
+                <td> {{use.codename}} </td>
+                <td>  to {{user.codename}} </td>
+                {% for good in goods_sales %}
+                <td>
+                    {% with a=use.codename|add:user.codename|add:good.idG %}
+                        {% with order=dict_info_sales|keyvalue:a %}
+                            {{order.quanO}}
+                        {% endwith %}
+                    {% endwith %}
+                    {% with c=use.codename|add:user.codename|add:good.idG %}
+                        {% with d=dict_sales|keyvalue:c %}
+                            {{ d.as_p }}
+                        {% endwith %}
+                     {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitA" value="Edit">
+    </form>
+
+
+{% endif %}
+
+
+
+{% endblock %}

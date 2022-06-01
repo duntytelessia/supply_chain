@@ -7,4 +7,5 @@ urlpatterns = [
     path('notallowed/', notallowed, name='notallowed'),
     path('<int:week>/controltower/modify', modify_as_controltower, name='modify_as_controltower'),
     path('<int:week>/<str:username>', actor, name='actor'),
+    path('<int:week>/<str:username>/L', actorL, name='actorL'),
 ]

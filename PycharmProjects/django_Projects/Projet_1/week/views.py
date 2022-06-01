@@ -148,6 +148,86 @@ def modify_as_controltower(request, week):
 
     return render(request, 'week/modify_as_controltower.html', context=context)
 
+def actorL(request, week, username):
+
+    # initializations
+    user = User.objects.get(username__exact=username)
+    group = user.groups.all().first()
+    week = Week.objects.get(week__exact=week)
+    first_week = (week.week == 1)
+    logistics = User.objects.filter(groups__name__exact='Logistics')
+
+    if group.name == 'Logistics':
+
+        goods_sales = Goods.objects.filter(idG__in=['F1', 'F2'])
+        seller_sales = User.objects.filter(groups__name__exact='Warehouses')
+        buyer_sales = User.objects.filter(groups__name__exact='Distributors')
+        ids_sales = []
+        keys_sales = []
+        dict_sales = {}
+        dict_info_sales = {}
+
+        def formlayout(formset, keys, dict):
+            i = 0
+            for f in formset:
+                dict.update({keys[i]: f})
+                i += 1
+
+        for buyer in buyer_sales:
+            for seller in seller_sales:
+                for good in goods_sales:
+                    id = seller.codename + buyer.codename + good.idG + str(week.week)+ '-' + request.user.codename
+                    tran_exists = Transaction.objects.filter(idT=id).exists()
+                    if Transaction.objects.filter(idT__exact=id).exists():
+                        tran = Transaction.objects.get(idT__exact=id)
+                    else:
+                        tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer, dateT=week)
+                    tran.save()
+                    ids_sales.append(id)
+                    keys_sales.append(seller.codename + buyer.codename + good.idG)
+                    if tran_exists:
+                        tran = Transaction.objects.get(idT__exact=id)
+                        dict_info_sales.update({seller.codename + buyer.codename + good.idG: tran})
+                    else:
+                        dict_info_sales.update({seller.codename + buyer.codename + good.idG: ' '})
+
+        SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceTransport'],
+                                            labels={'quanT': 'Q', 'priceTransport': 'Pt'}, extra=0)
+
+        if 'submitA' in request.POST:
+            formset_sales = SalesFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
+            if formset_sales.is_valid():
+                formset_sales.save()
+                messages.success(request, 'Validated')
+            else:
+                messages.error(request,
+                               'Sth is wrong.')
+            return HttpResponseRedirect(request.path_info)
+
+        formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
+
+        if week.week == 1:
+            form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
+        else:
+            form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
+
+        formlayout(formset_sales, keys_sales, dict_sales)
+
+        context = {
+            'user': user,
+            'group': group,
+            'week': str(week),
+            'first_week': first_week,
+            'goods_sales': goods_sales,
+            'buyer_sales': buyer_sales,
+            'seller_sales': seller_sales,
+            'dict_sales': dict_sales,
+            'dict_info_sales': dict_info_sales,
+            'formset_sales': formset_sales,
+            'form_validate': form_validate,
+        }
+
+        return render(request, 'week/lo.html', context=context)
 
 def actor(request, week, username):
 
@@ -160,7 +240,7 @@ def actor(request, week, username):
 
     # get logistics out of this page
     if group.name == 'Logistics':
-        return redirect('/')
+        return redirect('/week/' + str(week)+'/'+user.username+'/L')
     if group.name == 'Suppliers_A':
         goods_stock = Goods.objects.filter(idG__in=['R1', 'R3', 'P1', 'P3'])
         goods_buy = Goods.objects.filter(idG__in=['R1', 'R3'])
