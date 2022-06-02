@@ -59,7 +59,13 @@
 
 
 {% endif %}
+-----------------------------
+<h3> Validate </h3>
 
-
+<form method="post">
+    {% csrf_token %}
+    {{ form_validate.as_p }}
+    <input type="submit" name="submitV" value="Edit">
+</form>
 
 {% endblock %}

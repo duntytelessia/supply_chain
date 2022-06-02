@@ -6,7 +6,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from data.models import Week, CustomUser, Goods, Order, Transaction, Stock
 from django.forms import formset_factory, modelformset_factory
-from week.forms import ChangeUser_1, ChangeUser
+from week.forms import *
 
 User = get_user_model()
 
@@ -193,23 +193,33 @@ def actorL(request, week, username):
 
         SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceTransport'],
                                             labels={'quanT': 'Q', 'priceTransport': 'Pt'}, extra=0)
-
-        if 'submitA' in request.POST:
-            formset_sales = SalesFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
-            if formset_sales.is_valid():
-                formset_sales.save()
-                messages.success(request, 'Validated')
-            else:
-                messages.error(request,
-                               'Sth is wrong.')
-            return HttpResponseRedirect(request.path_info)
-
-        formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
-
-        if week.week == 1:
-            form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
+        if request.method == 'POST':
+            if 'submitA' in request.POST:
+                formset_sales = SalesFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
+                if formset_sales.is_valid():
+                    formset_sales.save()
+                    messages.success(request, 'Transactions changed')
+                else:
+                    messages.error(request,
+                                   'Change failed.')
+                return HttpResponseRedirect(request.path_info)
+            if 'submitV' in request.POST:
+                if week.week == 1:
+                    formset_validate = ChangeUser_1(request.POST, instance=User.objects.get(username__exact=username))
+                else:
+                    formset_validate = ChangeUser(request.POST, instance=User.objects.get(username__exact=username))
+                if formset_validate.is_valid():
+                    formset_validate.save()
+                    user = User.objects.get(username__exact=username)
+                    user.save()
+                    messages.success(request, 'Change effective')
+                return HttpResponseRedirect(request.path_info)
         else:
-            form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
+            formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
+            if week.week == 1:
+                form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
+            else:
+                form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
 
         formlayout(formset_sales, keys_sales, dict_sales)
 
@@ -458,7 +468,7 @@ def actor(request, week, username):
                                               labels={'quanO': 'Q'}, extra=0)
         OrderFormSet_2 = modelformset_factory(Order, fields=['quanO'],
                                               labels={'quanO': 'Q'}, extra=0)
-        SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceT'],
+        SalesFormSet = modelformset_factory(Transaction, formset=BaseSalesFormset, fields=['quanT', 'priceT'],
                                             labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
     else:
 
@@ -466,64 +476,80 @@ def actor(request, week, username):
         BuyFormSet = modelformset_factory(Transaction, fields=['verifiedT', ], labels={'verifiedT': 'confirm'}, extra=0)
         OrderFormSet = modelformset_factory(Order, fields=['quanO'],
                                             labels={'quanO': 'Q'}, extra=0)
-        SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceT'],
+        SalesFormSet = modelformset_factory(Transaction, formset=BaseSalesFormset, fields=['quanT', 'priceT'],
                                                   labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
 
     # forms
+    if group.name == "Factories":
+        formset_buy_1 = BuyFormSet_1(queryset=Transaction.objects.filter(idT__in=ids_buy_1))
+        formset_buy_2 = BuyFormSet_2(queryset=Transaction.objects.filter(idT__in=ids_buy_2))
+        formset_order_1 = OrderFormSet_1(queryset=Order.objects.filter(idO__in=ids_order_1))
+        formset_order_2 = OrderFormSet_2(queryset=Order.objects.filter(idO__in=ids_order_2))
+    else:
+        formset_buy = BuyFormSet(queryset=Transaction.objects.filter(idT__in=ids_buy))
+        formset_order = OrderFormSet(queryset=Order.objects.filter(idO__in=ids_order))
+    formset_stock = StockFormSet(queryset=Stock.objects.filter(idS__in=ids_stock))
+    formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
+    if week.week == 1:
+        form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
+    else:
+        form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
+
     if request.method == 'POST':
         if 'submitS' in request.POST:
             formset_stock = StockFormSet(request.POST, queryset=Stock.objects.filter(idS__in=ids_stock))
             if formset_stock.is_valid():
                 formset_stock.save()
                 messages.success(request, 'Stock edited')
-            return HttpResponseRedirect(request.path_info)
+                return HttpResponseRedirect(request.path_info)
         if group.name == "Factories":
             if 'submitB_1' in request.POST:
                 formset_buy_1 = BuyFormSet_1(request.POST, queryset=Transaction.objects.filter(idT__in=ids_buy_1))
                 if formset_buy_1.is_valid():
                     formset_buy_1.save()
                     messages.success(request, 'Buys edited')
-                return HttpResponseRedirect(request.path_info)
+                    return HttpResponseRedirect(request.path_info)
             if 'submitB_2' in request.POST:
                 formset_buy_2 = BuyFormSet_2(request.POST, queryset=Transaction.objects.filter(idT__in=ids_buy_2))
                 if formset_buy_2.is_valid():
                     formset_buy_2.save()
                     messages.success(request, 'Buys edited')
-                return HttpResponseRedirect(request.path_info)
+                    return HttpResponseRedirect(request.path_info)
             if 'submitO_1' in request.POST:
                 formset_order_1 = OrderFormSet_1(request.POST, queryset=Order.objects.filter(idO__in=ids_order_1))
                 if formset_order_1.is_valid():
                     formset_order_1.save()
                     messages.success(request, 'Order validated')
-                return HttpResponseRedirect(request.path_info)
+                    return HttpResponseRedirect(request.path_info)
             if 'submitO_2' in request.POST:
                 formset_order_2 = OrderFormSet_2(request.POST, queryset=Order.objects.filter(idO__in=ids_order_2))
                 if formset_order_2.is_valid():
                     formset_order_2.save()
                     messages.success(request, 'Order validated')
-                return HttpResponseRedirect(request.path_info)
+                    return HttpResponseRedirect(request.path_info)
         else:
             if 'submitB' in request.POST:
                 formset_buy = BuyFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_buy))
                 if formset_buy.is_valid():
                     formset_buy.save()
                     messages.success(request, 'Buys edited')
-                return HttpResponseRedirect(request.path_info)
+                    return HttpResponseRedirect(request.path_info)
             if 'submitO' in request.POST:
                 formset_order = OrderFormSet(request.POST, queryset=Order.objects.filter(idO__in=ids_order))
                 if formset_order.is_valid():
                     formset_order.save()
                     messages.success(request, 'Order validated')
-                return HttpResponseRedirect(request.path_info)
+                    return HttpResponseRedirect(request.path_info)
         if 'submitA' in request.POST:
             formset_sales = SalesFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
             if formset_sales.is_valid():
                 formset_sales.save()
                 messages.success(request, 'Sales edited')
+                return HttpResponseRedirect(request.path_info)
             else:
                 messages.error(request,
                                'Sales Edit failed. Plz check the stock or the order.')
-            return HttpResponseRedirect(request.path_info)
+
         if 'submitV' in request.POST:
             if week.week == 1:
                 formset_validate = ChangeUser_1(request.POST, instance=User.objects.get(username__exact=username))
@@ -534,38 +560,24 @@ def actor(request, week, username):
                 user = User.objects.get(username__exact=username)
                 user.save()
                 messages.success(request, 'Change effective')
-            return HttpResponseRedirect(request.path_info)
-    else:
-        if group.name == "Factories":
-            formset_buy_1 = BuyFormSet_1(queryset=Transaction.objects.filter(idT__in=ids_buy_1))
-            formset_buy_2 = BuyFormSet_2(queryset=Transaction.objects.filter(idT__in=ids_buy_2))
-            formset_order_1 = OrderFormSet_1(queryset=Order.objects.filter(idO__in=ids_order_1))
-            formset_order_2 = OrderFormSet_2(queryset=Order.objects.filter(idO__in=ids_order_2))
-        else:
-            formset_buy = BuyFormSet(queryset=Transaction.objects.filter(idT__in=ids_buy))
-            formset_order = OrderFormSet(queryset=Order.objects.filter(idO__in=ids_order))
-        formset_stock = StockFormSet(queryset=Stock.objects.filter(idS__in=ids_stock))
-        formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
-        if week.week == 1:
-            form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
-        else:
-            form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
+                return HttpResponseRedirect(request.path_info)
 
-        # form layout
-        formlayout(formset_stock, keys_stock, dict_stock)
-        formlayout(formset_sales, keys_sales, dict_sales)
-        if group.name == "Factories":
-            formlayout(formset_buy_1, keys_buy_1, dict_buy_1)
-            formlayout(formset_buy_2, keys_buy_2, dict_buy_2)
-            formlayout(formset_order_1, keys_order_1, dict_order_1)
-            formlayout(formset_order_2, keys_order_2, dict_order_2)
-            dict_order = dict_order_1 | dict_order_2
-            dict_buy = dict_buy_1 | dict_buy_2
-        else:
-            formlayout(formset_buy, keys_buy, dict_buy)
-            formlayout(formset_order, keys_order, dict_order)
+    # form layout
+    formlayout(formset_stock, keys_stock, dict_stock)
+    formlayout(formset_sales, keys_sales, dict_sales)
+    if group.name == "Factories":
+        formlayout(formset_buy_1, keys_buy_1, dict_buy_1)
+        formlayout(formset_buy_2, keys_buy_2, dict_buy_2)
+        formlayout(formset_order_1, keys_order_1, dict_order_1)
+        formlayout(formset_order_2, keys_order_2, dict_order_2)
+        dict_order = dict_order_1 | dict_order_2
+        dict_buy = dict_buy_1 | dict_buy_2
+    else:
+        formlayout(formset_buy, keys_buy, dict_buy)
+        formlayout(formset_order, keys_order, dict_order)
 
     # context
+    errors = formset_sales.non_form_errors()
     context = {
         'user': user,
         'group': group,
@@ -591,6 +603,7 @@ def actor(request, week, username):
         'fact': fact,
         'ware': ware,
         'dist': dist,
+        'errors': errors,
     }
     if group.name == "Factories":
         context['dict_buy_1'] = dict_buy_1

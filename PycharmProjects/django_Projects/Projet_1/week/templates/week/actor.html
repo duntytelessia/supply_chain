@@ -273,6 +273,7 @@
 <h3> Sell </h3>
     <form method="post">
         {{ formset_sales.management_form }}
+        {{ formset_sales.non_form_errors }}
         {% csrf_token %}
         <table>
             <tr>
