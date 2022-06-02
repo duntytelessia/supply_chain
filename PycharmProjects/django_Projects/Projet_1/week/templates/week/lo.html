@@ -17,8 +17,10 @@
 
 {% if not first_week %}
 <h3> Transaction </h3>
+<h4> Please confirm the transactions to validate. </h4>
     <form method="post">
         {{ formset_sales.management_form }}
+        {{ formset_sales.non_form_errors }}
         {% csrf_token %}
         <table>
             <tr>
@@ -54,7 +56,7 @@
             {% endfor %}
         </table>
 
-        <input type="submit" name="submitA" value="Edit">
+        <input type="submit" name="submitA" value="Confirm">
     </form>
 
 
@@ -76,6 +78,7 @@
         </tr>
     </table>
 -------------------------------------------------------------
+{% if first_week %}
 <h3> Validate </h3>
 
 <form method="post">
@@ -83,5 +86,7 @@
     {{ form_validate.as_p }}
     <input type="submit" name="submitV" value="Edit">
 </form>
-
+{% else %}
+<h3> Validate : {{request.user.validate}} </h3>
+{% endif %}
 {% endblock %}

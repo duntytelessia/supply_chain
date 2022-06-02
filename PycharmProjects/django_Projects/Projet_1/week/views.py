@@ -163,7 +163,7 @@ def actorL(request, week, username):
     cap = userr.maxT
     eff = 100
     if group.name == 'Logistics':
-        quan = Transaction.objects.filter(transporter__exact=userr).aggregate(Sum('quanT'))
+        quan = Transaction.objects.filter(idT__endswith=userr.codename, dateT=week).aggregate(Sum('quanT'))
     else:
         quan = Transaction.objects.filter(sellerT__exact=userr).aggregate(Sum('quanT'))
     quann = quan.get('quanT__sum')
@@ -198,7 +198,7 @@ def actorL(request, week, username):
                     if Transaction.objects.filter(idT__exact=id).exists():
                         tran = Transaction.objects.get(idT__exact=id)
                     else:
-                        tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer, dateT=week)
+                        tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer, dateT=week, transporter=user)
                     tran.save()
                     ids_sales.append(id)
                     keys_sales.append(seller.codename + buyer.codename + good.idG)
@@ -208,9 +208,12 @@ def actorL(request, week, username):
                     else:
                         dict_info_sales.update({seller.codename + buyer.codename + good.idG: ' '})
 
-        SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceTransport'],
+        SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceTransport'], formset=BaseSalesLFormset,
                                             labels={'quanT': 'Q', 'priceTransport': 'Pt'}, extra=0)
 
+        formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
+        if week.week == 1:
+            form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
 
         if request.method == 'POST':
             if 'submitA' in request.POST:
@@ -218,28 +221,21 @@ def actorL(request, week, username):
                 if formset_sales.is_valid():
                     formset_sales.save()
                     messages.success(request, 'Validated')
+                    user.validate = True
+                    user.save()
+                    return HttpResponseRedirect(request.path_info)
                 else:
                     messages.error(request,
                                    'Sth is wrong.')
-                return HttpResponseRedirect(request.path_info)
             if 'submitV' in request.POST:
                 if week.week == 1:
-                    formset_validate = ChangeUser_1(request.POST, instance=User.objects.get(username__exact=username))
-                else:
-                    formset_validate = ChangeUser(request.POST, instance=User.objects.get(username__exact=username))
-                if formset_validate.is_valid():
-                    formset_validate.save()
+                    form_validate = ChangeUser_1(request.POST, instance=User.objects.get(username__exact=username))
+                if form_validate.is_valid():
+                    form_validate.save()
                     user = User.objects.get(username__exact=username)
                     user.save()
                     messages.success(request, 'Change effective')
-                return HttpResponseRedirect(request.path_info)
-
-        formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
-
-        if week.week == 1:
-            form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
-        else:
-            form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
+                    return HttpResponseRedirect(request.path_info)
 
         formlayout(formset_sales, keys_sales, dict_sales)
 
@@ -254,12 +250,12 @@ def actorL(request, week, username):
             'dict_sales': dict_sales,
             'dict_info_sales': dict_info_sales,
             'formset_sales': formset_sales,
-            'form_validate': form_validate,
             'cap': cap,
             'quann': quann,
             'num': num,
         }
-
+        if week.week == 1:
+            context.update({'form_validate': form_validate})
         return render(request, 'week/lo.html', context=context)
 
 def actor(request, week, username):
@@ -275,9 +271,9 @@ def actor(request, week, username):
     cap = userr.maxT
     eff = 100
     if group.name == 'Logistics':
-        quan = Transaction.objects.filter(transporter__exact=userr).aggregate(Sum('quanT'))
+        quan = Transaction.objects.filter(transporter__exact=userr, dateT=week).aggregate(Sum('quanT'))
     else:
-        quan = Transaction.objects.filter(sellerT__exact=userr).aggregate(Sum('quanT'))
+        quan = Transaction.objects.filter(sellerT__exact=userr, dateT=week).aggregate(Sum('quanT'))
     quann = quan.get('quanT__sum')
     if quann == None:
         quann = 0

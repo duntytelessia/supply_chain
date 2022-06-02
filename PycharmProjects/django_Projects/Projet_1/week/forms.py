@@ -67,3 +67,22 @@ class BaseSalesFormset(BaseModelFormSet):
                                           str(buyer.codename) + ': total of transactions in greater than order')
 
         return cleaned_data
+
+
+class BaseSalesLFormset(BaseModelFormSet):
+
+    def clean(self):
+        cleaned_data = super(BaseSalesLFormset, self).clean()
+        if any(self.errors):
+
+            return
+
+        total = 0
+        for form in self.forms:
+            tran = form.instance
+            logic = tran.transporter
+            total += tran.quanT
+        if total > logic.maxT:
+            raise ValidationError('The transactions are greater than the max capacity')
+
+        return cleaned_data
