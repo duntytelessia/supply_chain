@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from data.models import Week, CustomUser, Goods, Order, Transaction, Stock
 from django.forms import formset_factory, modelformset_factory
 from week.forms import *
+from week.forms import ChangeUser_1, ChangeUser
+from django.db.models import Sum
 
 User = get_user_model()
 
@@ -157,6 +159,21 @@ def actorL(request, week, username):
     first_week = (week.week == 1)
     logistics = User.objects.filter(groups__name__exact='Logistics')
 
+    userr = request.user
+    cap = userr.maxT
+    eff = 100
+    if group.name == 'Logistics':
+        quan = Transaction.objects.filter(transporter__exact=userr).aggregate(Sum('quanT'))
+    else:
+        quan = Transaction.objects.filter(sellerT__exact=userr).aggregate(Sum('quanT'))
+    quann = quan.get('quanT__sum')
+    if quann == None:
+        quann = 0
+    if quann <= cap:
+        num = 0
+    else:
+        num = int((quann - cap) / eff) + 1
+
     if group.name == 'Logistics':
 
         goods_sales = Goods.objects.filter(idG__in=['F1', 'F2'])
@@ -173,8 +190,8 @@ def actorL(request, week, username):
                 dict.update({keys[i]: f})
                 i += 1
 
-        for buyer in buyer_sales:
-            for seller in seller_sales:
+        for seller in seller_sales:
+            for buyer in buyer_sales:
                 for good in goods_sales:
                     id = seller.codename + buyer.codename + good.idG + str(week.week)+ '-' + request.user.codename
                     tran_exists = Transaction.objects.filter(idT=id).exists()
@@ -193,15 +210,17 @@ def actorL(request, week, username):
 
         SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceTransport'],
                                             labels={'quanT': 'Q', 'priceTransport': 'Pt'}, extra=0)
+
+
         if request.method == 'POST':
             if 'submitA' in request.POST:
                 formset_sales = SalesFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
                 if formset_sales.is_valid():
                     formset_sales.save()
-                    messages.success(request, 'Transactions changed')
+                    messages.success(request, 'Validated')
                 else:
                     messages.error(request,
-                                   'Change failed.')
+                                   'Sth is wrong.')
                 return HttpResponseRedirect(request.path_info)
             if 'submitV' in request.POST:
                 if week.week == 1:
@@ -214,12 +233,13 @@ def actorL(request, week, username):
                     user.save()
                     messages.success(request, 'Change effective')
                 return HttpResponseRedirect(request.path_info)
+
+        formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
+
+        if week.week == 1:
+            form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
         else:
-            formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
-            if week.week == 1:
-                form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
-            else:
-                form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
+            form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
 
         formlayout(formset_sales, keys_sales, dict_sales)
 
@@ -235,6 +255,9 @@ def actorL(request, week, username):
             'dict_info_sales': dict_info_sales,
             'formset_sales': formset_sales,
             'form_validate': form_validate,
+            'cap': cap,
+            'quann': quann,
+            'num': num,
         }
 
         return render(request, 'week/lo.html', context=context)
@@ -247,6 +270,21 @@ def actor(request, week, username):
     week = Week.objects.get(week__exact=week)
     first_week = (week.week == 1)
     logistics = User.objects.filter(groups__name__exact='Logistics')
+
+    userr = request.user
+    cap = userr.maxT
+    eff = 100
+    if group.name == 'Logistics':
+        quan = Transaction.objects.filter(transporter__exact=userr).aggregate(Sum('quanT'))
+    else:
+        quan = Transaction.objects.filter(sellerT__exact=userr).aggregate(Sum('quanT'))
+    quann = quan.get('quanT__sum')
+    if quann == None:
+        quann = 0
+    if quann <= cap:
+        num = 0
+    else:
+        num = int((quann - cap) / eff)+1
 
     # get logistics out of this page
     if group.name == 'Logistics':
@@ -604,6 +642,9 @@ def actor(request, week, username):
         'ware': ware,
         'dist': dist,
         'errors': errors,
+        'cap': cap,
+        'quann': quann,
+        'num': num,
     }
     if group.name == "Factories":
         context['dict_buy_1'] = dict_buy_1
@@ -626,6 +667,7 @@ def actor(request, week, username):
 
 
     return render(request, 'week/actor.html', context=context)
+
 
 
 def notallowed(request):
