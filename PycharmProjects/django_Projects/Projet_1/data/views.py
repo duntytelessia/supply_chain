@@ -10,13 +10,13 @@ from .models import Goods, Week
 User = get_user_model()
 
 
-@login_required  # only logged-in users can see this page
-def profile(request):  # profile page for logged-in user
+@login_required     # only logged-in users can see this page
+def profile(request):   # profile page for logged-in user
     has_group = request.user.groups.all().exists()
-    if request.method == 'POST':  # allows the user to validate the group the admin gave to him
+    if request.method == 'POST':    # allows the user to validate the group the admin gave to him
         f = ValidationForm(request.POST, instance=request.user)
-        if f.is_valid():  # if the information entered in the form is valid
-            f.save()  # executes the save function of the form
+        if f.is_valid():    # if the information entered in the form is valid
+            f.save()    # executes the save function of the form
             messages.success(request, 'Validation complete')
             return redirect('profile')
 
@@ -26,9 +26,10 @@ def profile(request):  # profile page for logged-in user
 
 
 def index(request):
+
     group_exist = Group.objects.all().exists()
 
-    suppliers_a = User.objects.filter(groups__name__exact='Suppliers_A')  # all the users in the group suppliers_a
+    suppliers_a = User.objects.filter(groups__name__exact='Suppliers_A')    # all the users in the group suppliers_a
     s_a_count = User.objects.filter(groups__name__exact='Suppliers_A').count()  # how many users in the group
 
     suppliers_b = User.objects.filter(groups__name__exact='Suppliers_B')
@@ -46,7 +47,7 @@ def index(request):
     distributors = User.objects.filter(groups__name__exact='Distributors')
     d_count = User.objects.filter(groups__name__exact='Distributors').count()
 
-    all = s_a_count + s_b_count + f_count + w_count + l_count + d_count  # how many users in total
+    all = s_a_count + s_b_count + f_count + w_count + l_count + d_count     # how many users in total
 
     week_exist = Week.objects.all().exists()
 
@@ -67,10 +68,10 @@ def index(request):
         'group_exist': group_exist,
         'week_exist': week_exist,
     }
-    return render(request, 'data/index.html', context=context)
+    return render(request, 'data/index.html', context = context)
 
 
-def succes(request):  # when registration is complete
+def succes(request):    # when registration is complete
     return render(request, 'data/succes.html')
 
 
@@ -89,7 +90,7 @@ def register(request):  # register a new user
 
 
 @login_required
-def modify(request):  # modify the information of a user
+def modify(request):    # modify the information of a user
     if request.method == 'POST':
         f = UserChangeForm(request.POST, instance=request.user)
         if f.is_valid():
@@ -140,6 +141,7 @@ def initialize(request):
         good_f2 = Goods(idG='F2', nameG='juicy pork', durG=7)
         good_f2.save()
 
+
     if not User.objects.all().exists():
         User.objects.create_user(username='admin',
                                  email='wenjie.liu1002@gmail.com',
@@ -180,5 +182,3 @@ def initialize(request):
                                  )
 
     return render(request, 'data/initialize.html')
-
-
