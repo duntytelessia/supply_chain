@@ -159,9 +159,13 @@ def actorL(request, week, username):
     first_week = (week.week == 1)
     logistics = User.objects.filter(groups__name__exact='Logistics')
 
+
     userr = request.user
-    cap = userr.maxT
     eff = 100
+    sal = 100
+    numT = userr.numT
+    cap = userr.maxT + userr.numT * eff
+
     if group.name == 'Logistics':
         quan = Transaction.objects.filter(idT__endswith=userr.codename, dateT=week).aggregate(Sum('quanT'))
     else:
@@ -169,10 +173,7 @@ def actorL(request, week, username):
     quann = quan.get('quanT__sum')
     if quann == None:
         quann = 0
-    if quann <= cap:
-        num = 0
-    else:
-        num = int((quann - cap) / eff) + 1
+
 
     if group.name == 'Logistics':
 
@@ -215,6 +216,13 @@ def actorL(request, week, username):
         if week.week == 1:
             form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
 
+        keys_worker = request.user.codename
+        dict_worker = {keys_worker: request.user.numT}
+        WorkerFormSet = modelformset_factory(CustomUser, fields=['numT'], formset=WorkerFormset,
+                                            labels={'numT': 'Number of worker'}, extra=0)
+
+        formset_worker = WorkerFormSet(instance=User.objects.get(username__exact=username))
+
         if request.method == 'POST':
             if 'submitA' in request.POST:
                 formset_sales = SalesFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
@@ -236,8 +244,20 @@ def actorL(request, week, username):
                     user.save()
                     messages.success(request, 'Change effective')
                     return HttpResponseRedirect(request.path_info)
-
+            if 'submitT' in request.POST:
+                formset_worker = WorkerFormSet(request.POST, instance=CustomUser.objects.get(username__exact=username))
+                formset_worker.save()
+                user = User.objects.get(username__exact=username)
+                messages.success(request, 'Validated')
+                user.save()
+                return HttpResponseRedirect(request.path_info)
+            if 'numT' in request.POST :
+                user = User.objects.get(username__exact=username)
+                user.save()
+                messages.success(request, 'Change effective')
+                return HttpResponseRedirect(request.path_info)
         formlayout(formset_sales, keys_sales, dict_sales)
+        formlayout(formset_worker, keys_worker, dict_worker)
 
         context = {
             'user': user,
@@ -252,7 +272,12 @@ def actorL(request, week, username):
             'formset_sales': formset_sales,
             'cap': cap,
             'quann': quann,
-            'num': num,
+            'eff': eff,
+            'sal': sal,
+            'numT': numT,
+            'dict_worker': dict_worker,
+            'formset_worker': formset_worker,
+            'keys_worker': keys_worker,
         }
         if week.week == 1:
             context.update({'form_validate': form_validate})
@@ -268,19 +293,17 @@ def actor(request, week, username):
     logistics = User.objects.filter(groups__name__exact='Logistics')
 
     userr = request.user
-    cap = userr.maxT
     eff = 100
-    if group.name == 'Logistics':
-        quan = Transaction.objects.filter(transporter__exact=userr, dateT=week).aggregate(Sum('quanT'))
-    else:
-        quan = Transaction.objects.filter(sellerT__exact=userr, dateT=week).aggregate(Sum('quanT'))
+    sal = 100
+    numT = userr.numT
+    cap = userr.maxT + userr.numT * eff
+
+
+    quan = Transaction.objects.filter(sellerT__exact=userr).aggregate(Sum('quanT'))
     quann = quan.get('quanT__sum')
     if quann == None:
         quann = 0
-    if quann <= cap:
-        num = 0
-    else:
-        num = int((quann - cap) / eff)+1
+
 
     # get logistics out of this page
     if group.name == 'Logistics':
@@ -529,6 +552,13 @@ def actor(request, week, username):
     else:
         form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
 
+    keys_worker = request.user.codename
+    dict_worker = {keys_worker: request.user.numT}
+    WorkerFormSet = modelformset_factory(CustomUser, fields=['numT'], formset=WorkerFormset,
+                                         labels={'numT': 'Number of worker'}, extra=0)
+
+    formset_worker = WorkerFormSet(instance=User.objects.get(username__exact=username))
+
     if request.method == 'POST':
         if 'submitS' in request.POST:
             formset_stock = StockFormSet(request.POST, queryset=Stock.objects.filter(idS__in=ids_stock))
@@ -596,9 +626,24 @@ def actor(request, week, username):
                 messages.success(request, 'Change effective')
                 return HttpResponseRedirect(request.path_info)
 
+        if 'submitT' in request.POST:
+            formset_worker = WorkerFormSet(request.POST, instance=CustomUser.objects.get(username__exact=username))
+            formset_worker.save()
+            user = User.objects.get(username__exact=username)
+            messages.success(request, 'Validated')
+            user.save()
+            return HttpResponseRedirect(request.path_info)
+        if 'numT' in request.POST :
+            user = User.objects.get(username__exact=username)
+            user.save()
+            messages.success(request, 'Change effective')
+            return HttpResponseRedirect(request.path_info)
+
+
     # form layout
     formlayout(formset_stock, keys_stock, dict_stock)
     formlayout(formset_sales, keys_sales, dict_sales)
+    formlayout(formset_worker, keys_worker, dict_worker)
     if group.name == "Factories":
         formlayout(formset_buy_1, keys_buy_1, dict_buy_1)
         formlayout(formset_buy_2, keys_buy_2, dict_buy_2)
@@ -640,7 +685,12 @@ def actor(request, week, username):
         'errors': errors,
         'cap': cap,
         'quann': quann,
-        'num': num,
+        'eff': eff,
+        'sal': sal,
+        'numT': numT,
+        'dict_worker': dict_worker,
+        'formset_worker': formset_worker,
+        'keys_worker': keys_worker,
     }
     if group.name == "Factories":
         context['dict_buy_1'] = dict_buy_1

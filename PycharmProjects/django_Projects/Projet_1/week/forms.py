@@ -20,14 +20,14 @@ class ChangeUser(ModelForm):
 
     class Meta:
         model = User
-        fields = ('validate', )
+        fields = ('validate',)
+
 
 class BaseSalesFormset(BaseModelFormSet):
 
     def clean(self):
         cleaned_data = super(BaseSalesFormset, self).clean()
         if any(self.errors):
-
             return
 
         by_goods = dict()
@@ -74,7 +74,6 @@ class BaseSalesLFormset(BaseModelFormSet):
     def clean(self):
         cleaned_data = super(BaseSalesLFormset, self).clean()
         if any(self.errors):
-
             return
 
         total = 0
@@ -86,3 +85,11 @@ class BaseSalesLFormset(BaseModelFormSet):
             raise ValidationError('The transactions are greater than the max capacity')
 
         return cleaned_data
+
+
+class WorkerFormset(ModelForm):
+    password = None
+
+    class Meta:
+        model = User
+        fields = ('numT', )

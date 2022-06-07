@@ -1,6 +1,7 @@
 {% extends 'data/base_generic.html' %}
 {% load custom_tags %}
 {% block content %}
+
 <h1> Control Tower Interface</h1>
 <h2> Week {{ week }} </h2>
 <h3> {{ user.username }}</h3>
@@ -18,7 +19,7 @@
 {% if not first_week %}
 <h3> Transaction </h3>
 <h4> Please confirm the transactions to validate. </h4>
-    <form method="post">
+<form method="post">
         {{ formset_sales.management_form }}
         {{ formset_sales.non_form_errors }}
         {% csrf_token %}
@@ -65,7 +66,7 @@
 <h3> Part-time workers </h3>
 <table>
         <tr>
-            <td> Capacity </td>
+            <td> New Capacity </td>
             <td> {{ cap }} </td>
         </tr>
         <tr>
@@ -73,10 +74,32 @@
             <td> {{ quann }} </td>
         </tr>
         <tr>
-            <td> Part-time workers </td>
-            <td> {{ num }} </td>
+            <td> Efficiency </td>
+            <td> {{ eff }} </td>
         </tr>
+        <tr>
+            <td> Salary </td>
+            <td> {{ sal }} </td>
+        </tr>
+        <tr>
+            <td> Number of worker </td>
+            <td>
+            <form method="post">
+        {{ formset_worker.management_form }}
+        {{ formset_worker.non_form_errors }}
+        {% csrf_token %}
+            {% with c=keys_worker %}
+                {% with d=dict_worker|keyvalue:c %}
+                    {{ d.as_p }}
+                {% endwith %}
+            {% endwith %}
+        <input type="number" name="numT" value="{{user.numT}}">
+        <input type="submit" name="submitT" value="Confirm">
+    </form>
+            </td>
+    </tr>
     </table>
+
 -------------------------------------------------------------
 {% if first_week %}
 <h3> Validate </h3>

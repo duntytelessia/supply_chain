@@ -9,6 +9,7 @@ class CustomUser(AbstractUser):
     codename = models.CharField(max_length=10, default='A')
     funds = models.FloatField(default=0)
     maxT = models.FloatField(default=1000)
+    numT = models.IntegerField(default=0)
 
 
 class Week(models.Model):
