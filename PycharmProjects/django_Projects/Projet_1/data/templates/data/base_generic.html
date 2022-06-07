@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="overflow: hidden;">
 <head>
     {% load custom_tags %}
   {% block title %}{% endblock %}
@@ -11,28 +11,34 @@
 <body>
   <div class="container-fluid">
     <div class="row">
-      <div class="col-sm-2">
+      <div class="col-sm-2" style="height: 80px;width: 100%;">
           {% block sidebar %}
            <ul class="sidebar-nav">
-                <p> <a href="/">Main Page</a> </p>
+            <h3 style="float:left;"> Welcome to the Production Chain Website ! </h3>
+                <p style="float: right; margin-right: 20px;padding-right: 20px;"> <a href="/">Main Page</a> </p>
                 {% if user.is_authenticated %}
-                    <p> Logged as {{ user.username }}</p>
-                    <p> <a href="/accounts/logout"> Logout </a> </p>
-                    <p> <a href="/profile/"> Profile </a> </p>
+                    <p style="float: right; margin-right: 20px;"> Logged as {{ user.username }}</p>
+                    <p style="float: right; margin-right: 20px;"> <a href="/accounts/logout"> Logout </a> </p>
+                    <p style="float: right; margin-right: 20px;"> <a href="/profile/"> Profile </a> </p>
                 {% else %}
-                    <p> <a href="/accounts/login"> Login </a> </p>
+                    <p style="float: right; margin-right: 20px;"> <a href="/accounts/login"> Login </a> </p>
                 {% endif %}
 
                 {% if user.is_superuser %}
-                    <p> <a href="/controltower"> access to control tower interface</a></p>
+                    <p style="float: right; margin-right: 20px;  "> <a href="/controltower"> access to control tower interface</a></p>
                {% endif %}
            </ul>
           {% endblock %}
       </div>
-         <div class="col-sm-10 ">
+      <hr>
+      <div class="col-sm-10 "  style="height:480px;width:48%; overflow:scroll;float: left;margin-left: 15px;">
              {% block content %}    <!-- Content variable between urls -->
              {% endblock %}
-         </div>
+      </div>
+         <!-- Simulation B -->
+      <div class="col-sm-10" style="height:480px;width:48%; overflow:scroll;float:right; margin-right: 15px;">
+        {% block simulB %}{% endblock %}
+      </div>
     </div>
   </div>
 </body>
