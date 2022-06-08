@@ -9,5 +9,6 @@ urlpatterns = [
     path('valid/<str:idg>', edit_good, name='edit_good'),# to edit data of the good: idG
     path('validate_all', validate_all, name='validate_all'),
     path('begin_simulation', begin_simulation, name='begin_simulation'),
-    path('new_week', new_week, name='new_week')
+    path('new_week', new_week, name='new_week'),
+    path('costs', costs, name='costs')
 ]

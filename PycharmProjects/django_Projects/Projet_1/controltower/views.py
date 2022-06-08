@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from controltower.forms import GroupChangeForm, GoodChangeForm, WorkersForm
 from data.models import Goods, Week, Order, Transaction, Stock, Worker, Path
+from django.forms import modelformset_factory
 from controltower.forms import *
 
 
@@ -162,6 +163,21 @@ def validate_all(request):
 
 
 @user_passes_test(lambda u: u.is_superuser)
+def costs(request):
+
+    all_users = User.objects.all()
+    CostFormSet = modelformset_factory(User, fields=['fixed_cost', ], extra=0)
+
+    if request.method == 'POST':
+        f = CostFormSet(request.POST, queryset=all_users)  # change costs
+        if f.is_valid():
+            f.save()
+            messages.success(request, 'Costs changed successfully')
+            return redirect('/controltower')
+    f = CostFormSet(queryset=all_users)
+    return render(request, 'controltower/costs.html', context={'f': f})
+
+@user_passes_test(lambda u: u.is_superuser)
 def begin_simulation(request):
 
     # unvalidate all
@@ -205,6 +221,7 @@ def new_week(request):
         new_stock_buyer = Stock(idS=id, idU=stock.idU, goods=stock.goods, dateS=new_week, quanS=stock.quanS)
         new_stock_buyer.save()
 
+    # all changed linked to transactions
     for tran in v_transactions:
 
         if tran.buyerT.codename != 'A':
@@ -320,6 +337,8 @@ def new_week(request):
         stock_product_4.save()
 
     for user in User.objects.all():
+        new_funds = user.funds - user.fixed_costs
+        user.funds = new_funds
         user.validate = False
         user.save()
 

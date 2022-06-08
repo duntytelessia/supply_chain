@@ -10,6 +10,7 @@ class CustomUser(AbstractUser):
     funds = models.FloatField(default=0)
     maxT = models.FloatField(default=1000)
     numT = models.IntegerField(default=0)
+    fixed_cost = models.FloatField(default=1000)
 
     def __str__(self):
         return str(self.codename)

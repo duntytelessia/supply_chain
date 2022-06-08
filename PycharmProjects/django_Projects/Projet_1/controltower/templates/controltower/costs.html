@@ -1,0 +1,26 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block content %}
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+    <h1> Control Tower Interface</h1>
+    <h2> Change fixed costs:</h2>
+
+
+<form method="post" >
+    {% csrf_token %}
+    {{ f.management_form }}
+    <ul>
+        {% for form in f %}
+        <li> <h5> {{ form.instance.username }} :</h5> {{ form.as_p }}</li>
+        {% endfor %}
+    </ul>
+    <input type="submit" name="submit" value="Edit" />
+</form>
+
+{% endblock %}
