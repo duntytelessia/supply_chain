@@ -4,8 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from controltower.forms import GroupChangeForm, GoodChangeForm, WorkersForm
-from data.models import Goods, Week, Order, Transaction, Stock, Worker
-from django.http import HttpResponseRedirect
+from data.models import Goods, Week, Order, Transaction, Stock, Worker, Path
 from controltower.forms import *
 
 
@@ -164,12 +163,30 @@ def validate_all(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def begin_simulation(request):
+
+    # unvalidate all
     for user in User.objects.all():
         user.validate = False
         user.save()
+
+
+    # create all paths
+    warehouses = User.objects.filter(groups__name__exact='Warehouses')
+    logistics = User.objects.filter(groups__name__exact='Logistics')
+    distributors = User.objects.filter(groups__name__exact='Distributors')
+    if warehouses.exists() and logistics.exists() and distributors.exists():
+        for warehouse in warehouses:
+            for distributor in distributors:
+                for logistic in logistics:
+                    id = warehouse.codename + distributor.codename + logistic.codename
+                    path = Path(idP=id,
+                                sellerP=warehouse,
+                                buyerP=distributor,
+                                logicP=logistic)
+                    path.save()
+
     week_1 = Week(week=1)
     week_1.save()
-
     return render(request, 'controltower/begin_simulation.html')
 
 

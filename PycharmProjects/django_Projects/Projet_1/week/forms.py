@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
-from django.forms import ModelForm, BaseModelFormSet
+from django.forms import ModelForm, BaseModelFormSet, BaseFormSet
 from django import forms
 from django.core.exceptions import ValidationError
-from data.models import CustomUser, Stock, Order, Week
 from django.contrib.auth.forms import UserChangeForm
+from data.models import CustomUser, Stock, Order, Week, Transaction
 
 User = get_user_model()
 
@@ -22,6 +22,19 @@ class ChangeUser(ModelForm):
     class Meta:
         model = User
         fields = ('validate',)
+
+
+
+class LogicForm(forms.Form):
+
+    chose = forms.ModelChoiceField(User.objects.filter(groups__name__exact='Logistics'), required=True, label='')
+
+
+class RequiredFormSet(BaseFormSet):
+    def __init__(self, *args, **kwargs):
+        super(RequiredFormSet, self).__init__(*args, **kwargs)
+        for form in self.forms:
+            form.empty_permitted = False
 
 
 class BaseSalesFormset(BaseModelFormSet):
@@ -72,6 +85,10 @@ class BaseSalesFormset(BaseModelFormSet):
 
 class BaseSalesLFormset(BaseModelFormSet):
 
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(BaseSalesLFormset, self).__init__(*args, **kwargs)
+
     def clean(self):
         cleaned_data = super(BaseSalesLFormset, self).clean()
         if any(self.errors):
@@ -80,9 +97,15 @@ class BaseSalesLFormset(BaseModelFormSet):
         total = 0
         for form in self.forms:
             tran = form.instance
-            logic = tran.transporter
             total += tran.quanT
-        if total > logic.maxT:
+
+            id_o = tran.idT[:-1] + str(tran.dateT.week - 1)
+            order = Order.objects.get(idO__exact=id_o)
+            if tran.quanT > order.quanO:
+                raise ValidationError(str(tran.sellerT) + ' to ' + str(tran.buyerT) + ': '
+                                      + str(tran.goods) + '     Transaction is greater than order')
+
+        if total > self.user.maxT:
             raise ValidationError('The transactions are greater than the max capacity')
 
         return cleaned_data

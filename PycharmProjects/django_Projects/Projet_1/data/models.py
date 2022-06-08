@@ -11,6 +11,8 @@ class CustomUser(AbstractUser):
     maxT = models.FloatField(default=1000)
     numT = models.IntegerField(default=0)
 
+    def __str__(self):
+        return str(self.codename)
 
 class Week(models.Model):
     week = models.PositiveIntegerField()
@@ -59,12 +61,20 @@ class Transaction(models.Model):
     goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     dateT = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
     priceT = models.FloatField(default=0)
-    priceTransport = models.FloatField(default=0)
     verifiedT = models.BooleanField(default=False)
-    transporter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tran_transporter', default=1)
 
 
 class Worker(models.Model):
     id = models.CharField(default=0, max_length=200, primary_key=True)
     eff = models.FloatField()
     sal = models.FloatField()
+
+
+class Path(models.Model):
+    idP = models.CharField(max_length=200, primary_key=True)
+    sellerP = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='path_seller', default=2)
+    buyerP = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='path_buyer', default=2)
+    logicP = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='path_logic', default=1)
+    priceP = models.FloatField(default=0)
+    chosenP = models.BooleanField(default=False)
+
