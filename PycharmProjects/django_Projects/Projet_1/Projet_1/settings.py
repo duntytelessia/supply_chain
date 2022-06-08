@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #'data.apps.DataConfig',
+    # 'data.apps.DataConfig',
     'data',
     'controltower.apps.ControltowerConfig',
     'week.apps.WeekConfig',

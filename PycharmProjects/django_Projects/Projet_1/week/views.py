@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, user_passes_test
-from data.models import Week, CustomUser, Goods, Order, Transaction, Stock
+from data.models import Week, CustomUser, Goods, Order, Transaction, Stock, Path
 from django.forms import formset_factory, modelformset_factory
 from week.forms import *
 from week.forms import ChangeUser_1, ChangeUser
@@ -157,8 +157,6 @@ def actorL(request, week, username):
     group = user.groups.all().first()
     week = Week.objects.get(week__exact=week)
     first_week = (week.week == 1)
-    logistics = User.objects.filter(groups__name__exact='Logistics')
-
     userr = request.user
     cap = userr.maxT
     eff = 100
@@ -179,10 +177,10 @@ def actorL(request, week, username):
         goods_sales = Goods.objects.filter(idG__in=['F1', 'F2'])
         seller_sales = User.objects.filter(groups__name__exact='Warehouses')
         buyer_sales = User.objects.filter(groups__name__exact='Distributors')
-        ids_sales = []
-        keys_sales = []
-        dict_sales = {}
-        dict_info_sales = {}
+        ids_paths, ids_sales = [], []
+        keys_paths, keys_sales = [], []
+        dict_paths, dict_sales = {}, {}
+        dict_info_paths, dict_info_sales = {}, {}
 
         def formlayout(formset, keys, dict):
             i = 0
@@ -192,32 +190,43 @@ def actorL(request, week, username):
 
         for seller in seller_sales:
             for buyer in buyer_sales:
-                for good in goods_sales:
-                    id = seller.codename + buyer.codename + good.idG + str(week.week)+ '-' + request.user.codename
-                    tran_exists = Transaction.objects.filter(idT=id).exists()
-                    if Transaction.objects.filter(idT__exact=id).exists():
-                        tran = Transaction.objects.get(idT__exact=id)
-                    else:
-                        tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer, dateT=week, transporter=user)
-                    tran.save()
-                    ids_sales.append(id)
-                    keys_sales.append(seller.codename + buyer.codename + good.idG)
-                    if tran_exists:
-                        tran = Transaction.objects.get(idT__exact=id)
-                        dict_info_sales.update({seller.codename + buyer.codename + good.idG: tran})
-                    else:
-                        dict_info_sales.update({seller.codename + buyer.codename + good.idG: ' '})
+                #paths
+                id_p = seller.codename + buyer.codename + user.codename
+                path = Path.objects.get(idP=id_p)
+                dict_info_paths.update({seller.codename + buyer.codename: path})
+                ids_paths.append(id_p)
+                keys_paths.append(seller.codename + buyer.codename)
+                if path.chosenP:
+                    for good in goods_sales:
+                        # transactions
+                        id_t = seller.codename + buyer.codename + good.idG + str(week.week)
+                        id_o = seller.codename + buyer.codename + good.idG + str(week.week - 1)
+                        tran_exists = Transaction.objects.filter(idT=id_t).exists()
+                        order_exists = Order.objects.filter(idO=id_o).exists()
+                        if tran_exists and order_exists:
+                            order = Order.objects.get(idO__exact=id_o)
+                            dict_info_sales.update({seller.codename + buyer.codename + good.idG: order})
+                            ids_sales.append(id_t)
+                            keys_sales.append(seller.codename + buyer.codename + good.idG)
 
-        SalesFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceTransport'], formset=BaseSalesLFormset,
-                                            labels={'quanT': 'Q', 'priceTransport': 'Pt'}, extra=0)
+        SalesFormSet = modelformset_factory(Transaction, fields=['quanT', ], formset=BaseSalesLFormset,
+                                            labels={'quanT': 'Q'}, extra=0)
+        PathsFormSet = modelformset_factory(Path, fields=['priceP', ], labels={'priceP': 'Price'}, extra=0)
 
-        formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
+        formset_sales = SalesFormSet(user=user, queryset=Transaction.objects.filter(idT__in=ids_sales))
+        formset_paths = PathsFormSet(queryset=Path.objects.filter(idP__in=ids_paths))
         if week.week == 1:
             form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
 
         if request.method == 'POST':
+            if 'submitP' in request.POST:
+                formset_paths = PathsFormSet(request.POST, queryset=Path.objects.filter(idP__in=ids_paths))
+                if formset_paths.is_valid():
+                    formset_paths.save()
+                    messages.success(request, 'Prices Changed')
+                    return HttpResponseRedirect(request.path_info)
             if 'submitA' in request.POST:
-                formset_sales = SalesFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
+                formset_sales = SalesFormSet(user, request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
                 if formset_sales.is_valid():
                     formset_sales.save()
                     messages.success(request, 'Validated')
@@ -238,6 +247,7 @@ def actorL(request, week, username):
                     return HttpResponseRedirect(request.path_info)
 
         formlayout(formset_sales, keys_sales, dict_sales)
+        formlayout(formset_paths, keys_paths, dict_paths)
 
         context = {
             'user': user,
@@ -250,6 +260,11 @@ def actorL(request, week, username):
             'dict_sales': dict_sales,
             'dict_info_sales': dict_info_sales,
             'formset_sales': formset_sales,
+            'keys_sales': keys_sales,
+            'dict_paths': dict_paths,
+            'dict_info_paths': dict_info_paths,
+            'formset_paths': formset_sales,
+            'keys_paths': keys_paths,
             'cap': cap,
             'quann': quann,
             'num': num,
@@ -266,12 +281,14 @@ def actor(request, week, username):
     week = Week.objects.get(week__exact=week)
     first_week = (week.week == 1)
     logistics = User.objects.filter(groups__name__exact='Logistics')
+    nb_distributors = User.objects.filter(groups__name__exact='Distributors').count()
 
+    '''
     userr = request.user
     cap = userr.maxT
     eff = 100
     if group.name == 'Logistics':
-        quan = Transaction.objects.filter(transporter__exact=userr, dateT=week).aggregate(Sum('quanT'))
+        quan = Transaction.objects.filter(dateT=week).aggregate(Sum('quanT'))
     else:
         quan = Transaction.objects.filter(sellerT__exact=userr, dateT=week).aggregate(Sum('quanT'))
     quann = quan.get('quanT__sum')
@@ -281,6 +298,7 @@ def actor(request, week, username):
         num = 0
     else:
         num = int((quann - cap) / eff)+1
+    '''
 
     # get logistics out of this page
     if group.name == 'Logistics':
@@ -323,6 +341,7 @@ def actor(request, week, username):
         goods_sales = Goods.objects.filter(idG__in=['F1', 'F2'])
         seller_sales = request.user
         buyer_sales = User.objects.filter(groups__name__exact='Distributors')
+
     elif group.name == 'Distributors':
         goods_stock = Goods.objects.filter(idG__in=['F1', 'F2'])
         goods_buy = Goods.objects.filter(idG__in=['F1', 'F2'])
@@ -332,11 +351,13 @@ def actor(request, week, username):
         seller_sales = request.user
         buyer_sales = User.objects.filter(username__exact='admin')
     ids_stock, ids_buy, ids_order, ids_sales = [], [], [], []
-    keys_stock, keys_buy, keys_order, keys_sales = [], [], [], []
-    dict_stock, dict_buy, dict_order, dict_sales = {}, {}, {}, {}
+    keys_stock, keys_buy, keys_order, keys_sales, keys_path = [], [], [], [], []
+    dict_stock, dict_buy, dict_order, dict_sales, dict_path = {}, {}, {}, {}, {}
     dict_info_buy = {}
     dict_info_sales = {}
     dict_info_transport = {}
+    dict_info_path = {}
+    initial = []
     supp = (group.name == 'Suppliers_A' or group.name == 'Suppliers_B')
     fact = (group.name == 'Factories')
     ware = (group.name == 'Warehouses')
@@ -387,20 +408,6 @@ def actor(request, week, username):
         ids_buy = ids_buy_1 + ids_buy_2
         keys_buy = keys_buy_1 + keys_buy_2
         dict_info_buy = dict_info_buy_1 | dict_info_buy_2
-    elif group.name == 'Distributors':
-        for good in goods_buy:
-            for seller in seller_buy:
-                for logic in logistics:
-                    id = seller.codename + buyer_buy.codename + good.idG + str(week.week) + '-' + logic.codename
-                    if Transaction.objects.filter(idT__exact=id).exists():
-                        tran = Transaction.objects.get(idT__exact=id)
-                    else:
-                        tran = Transaction(idT=id, sellerT=seller, goods=good,
-                                           buyerT=buyer_buy, dateT=week, transporter=logic)
-                    tran.save()
-                    ids_buy.append(id)
-                    keys_buy.append(seller.codename + logic.codename + good.idG)
-                    dict_info_buy.update({seller.codename + logic.codename + good.idG: Transaction.objects.get(idT__exact=id)})
     else:
         for good in goods_buy:
             for seller in seller_buy:
@@ -451,45 +458,42 @@ def actor(request, week, username):
                 keys_order.append(seller.codename + good.idG)
 
     # create transaction
+    for buyer in buyer_sales:
+        for good in goods_sales:
+            id = seller_sales.codename + buyer.codename + good.idG + str(week.week)
+            id_order = seller_sales.codename + buyer.codename + good.idG + str(week.week - 1)
+            order_exists = Order.objects.filter(idO=id_order).exists()
+            if Transaction.objects.filter(idT__exact=id).exists():
+                tran = Transaction.objects.get(idT__exact=id)
+            else:
+                tran = Transaction(idT=id, sellerT=seller_sales, goods=good, buyerT=buyer, dateT=week)
+            tran.save()
+            ids_sales.append(id)
+            keys_sales.append(buyer.codename + good.idG)
+            if order_exists:
+                order = Order.objects.get(idO__exact=id_order)
+                dict_info_sales.update({buyer.codename + good.idG: order})
+            else:
+                dict_info_sales.update({buyer.codename + good.idG: ' '})
+
+    # initialize paths
+    path_sellers = []
+    path_buyers = []
     if group.name == 'Warehouses':
         for buyer in buyer_sales:
-            for good in goods_sales:
-                for logic in logistics:
-                    id = seller_sales.codename + buyer.codename + good.idG + str(week.week) + '-' + logic.codename
-                    if Transaction.objects.filter(idT__exact=id).exists():
-                        tran = Transaction.objects.get(idT__exact=id)
-                    else:
-                        tran = Transaction(idT=id, sellerT=seller_sales, goods=good,
-                                           buyerT=buyer, dateT=week, transporter=logic)
-                    tran.save()
-                    ids_sales.append(id)
-                    keys_sales.append(buyer.codename + logic.codename + good.idG)
-                    dict_info_transport.update({buyer.codename + logic.codename + good.idG: tran})
-                id_order = seller_sales.codename + buyer.codename + good.idG + str(week.week - 1)
-                order_exists = Order.objects.filter(idO=id_order).exists()
-                if order_exists:
-                    order = Order.objects.get(idO__exact=id_order)
-                    dict_info_sales.update({buyer.codename + good.idG: order})
-                else:
-                    dict_info_sales.update({buyer.codename + good.idG: ' '})
-    else:
-        for buyer in buyer_sales:
-            for good in goods_sales:
-                id = seller_sales.codename + buyer.codename + good.idG + str(week.week)
-                id_order = seller_sales.codename + buyer.codename + good.idG + str(week.week - 1)
-                order_exists = Order.objects.filter(idO=id_order).exists()
-                if Transaction.objects.filter(idT__exact=id).exists():
-                    tran = Transaction.objects.get(idT__exact=id)
-                else:
-                    tran = Transaction(idT=id, sellerT=seller_sales, goods=good, buyerT=buyer, dateT=week)
-                tran.save()
-                ids_sales.append(id)
-                keys_sales.append(buyer.codename + good.idG)
-                if order_exists:
-                    order = Order.objects.get(idO__exact=id_order)
-                    dict_info_sales.update({buyer.codename + good.idG: order})
-                else:
-                    dict_info_sales.update({buyer.codename + good.idG: ' '})
+            initialized = False
+            for logic in logistics:
+                id = seller_sales.codename + buyer.codename + logic.codename
+                path = Path.objects.get(idP__exact=id)
+                dict_info_path.update({buyer.codename + logic.codename: path})
+                if path.chosenP:
+                    initial.append({'chose': path.logicP})
+                    initialized = True
+            if not initialized:
+                initial.append({'chose': None})
+            path_sellers.append(user)
+            path_buyers.append(buyer)
+            keys_path.append(buyer.codename)
 
     # create formsets
     if group.name == "Factories":
@@ -510,8 +514,12 @@ def actor(request, week, username):
         BuyFormSet = modelformset_factory(Transaction, fields=['verifiedT', ], labels={'verifiedT': 'confirm'}, extra=0)
         OrderFormSet = modelformset_factory(Order, fields=['quanO'],
                                             labels={'quanO': 'Q'}, extra=0)
-        SalesFormSet = modelformset_factory(Transaction, formset=BaseSalesFormset, fields=['quanT', 'priceT'],
-                                                  labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
+        SalesFormSet = modelformset_factory(Transaction, formset=BaseSalesFormset,
+                                            fields=['quanT', 'priceT'],
+                                            labels={'quanT': 'Q', 'priceT': 'P'},
+                                            extra=0)
+    LogicFormset = formset_factory(LogicForm, formset=RequiredFormSet, extra=0)
+
 
     # forms
     if group.name == "Factories":
@@ -524,6 +532,7 @@ def actor(request, week, username):
         formset_order = OrderFormSet(queryset=Order.objects.filter(idO__in=ids_order))
     formset_stock = StockFormSet(queryset=Stock.objects.filter(idS__in=ids_stock))
     formset_sales = SalesFormSet(queryset=Transaction.objects.filter(idT__in=ids_sales))
+    formset_logic = LogicFormset(initial=initial)
     if week.week == 1:
         form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
     else:
@@ -583,7 +592,25 @@ def actor(request, week, username):
             else:
                 messages.error(request,
                                'Sales Edit failed. Plz check the stock or the order.')
-
+        if 'submitP' in request.POST:
+            formset_logic = LogicFormset(request.POST, initial=initial)
+            if formset_logic.is_valid():
+                i = 0
+                u = formset_logic.cleaned_data
+                for form in formset_logic.forms:
+                    buyer = User.objects.get(codename__exact=keys_path[i])
+                    logic = form.cleaned_data['chose']
+                    path = Path.objects.get(sellerP=seller_sales, buyerP=buyer, logicP=logic)
+                    all_paths = Path.objects.filter(sellerP=seller_sales, buyerP=buyer)
+                    all_other = all_paths.exclude(idP=path.idP)
+                    path.chosenP = True
+                    path.save()
+                    for p in all_other:
+                        p.chosenP = False
+                        p.save()
+                    i += 1
+                messages.success(request, 'Paths edited')
+                return HttpResponseRedirect(request.path_info)
         if 'submitV' in request.POST:
             if week.week == 1:
                 formset_validate = ChangeUser_1(request.POST, instance=User.objects.get(username__exact=username))
@@ -599,6 +626,7 @@ def actor(request, week, username):
     # form layout
     formlayout(formset_stock, keys_stock, dict_stock)
     formlayout(formset_sales, keys_sales, dict_sales)
+    formlayout(formset_logic, keys_path, dict_path)
     if group.name == "Factories":
         formlayout(formset_buy_1, keys_buy_1, dict_buy_1)
         formlayout(formset_buy_2, keys_buy_2, dict_buy_2)
@@ -611,7 +639,6 @@ def actor(request, week, username):
         formlayout(formset_order, keys_order, dict_order)
 
     # context
-    errors = formset_sales.non_form_errors()
     context = {
         'user': user,
         'group': group,
@@ -626,21 +653,20 @@ def actor(request, week, username):
         'dict_buy': dict_buy,
         'dict_order': dict_order,
         'dict_sales': dict_sales,
+        'dict_path': dict_path,
         'dict_info_buy': dict_info_buy,
         'dict_info_sales': dict_info_sales,
         'dict_info_transport': dict_info_transport,
+        'dict_info_path': dict_info_path,
         'formset_stock': formset_stock,
         'formset_sales': formset_sales,
         'form_validate': form_validate,
+        'formset_logic': formset_logic,
         'logistics': logistics,
         'supp': supp,
         'fact': fact,
         'ware': ware,
         'dist': dist,
-        'errors': errors,
-        'cap': cap,
-        'quann': quann,
-        'num': num,
     }
     if group.name == "Factories":
         context['dict_buy_1'] = dict_buy_1

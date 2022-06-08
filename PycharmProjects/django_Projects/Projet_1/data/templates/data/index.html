@@ -14,7 +14,7 @@
 
 <ul>
 {% for user in suppliers_a %}
-   <li><p> {{ user }} </p></li>
+   <li><p> {{ user.username }} </p></li>
 {% endfor %}
 </ul>
 
@@ -22,7 +22,7 @@
 
 <ul>
 {% for user in suppliers_b %}
-   <li><p> {{ user }} </p></li>
+   <li><p> {{ user.username }} </p></li>
 {% endfor %}
 </ul>
 
@@ -30,7 +30,7 @@
 
 <ul>
 {% for user in factories %}
-   <li><p> {{ user }} </p></li>
+   <li><p> {{ user.username }} </p></li>
 {% endfor %}
 </ul>
 
@@ -38,7 +38,7 @@
 
 <ul>
 {% for user in warehouses %}
-   <li><p> {{ user }} </p></li>
+   <li><p> {{ user.username }} </p></li>
 {% endfor %}
 </ul>
 
@@ -46,7 +46,7 @@
 
 <ul>
 {% for user in logistics %}
-   <li><p> {{ user }} </p></li>
+   <li><p> {{ user.username }} </p></li>
 {% endfor %}
 </ul>
 
@@ -54,7 +54,7 @@
 
 <ul>
 {% for user in distributors %}
-   <li><p> {{ user }} </p></li>
+   <li><p> {{ user.username }} </p></li>
 {% endfor %}
 </ul>
 

@@ -15,6 +15,44 @@
 </ul>
 {% endif %}
 
+<h3> Transport Prices </h3>
+    <form method="post">
+        {{ formset_paths.management_form }}
+        {{ formset_paths.non_form_errors }}
+        {% csrf_token %}
+        <table>
+            {% for use in seller_sales %}
+            <tr>
+                </tr>
+            {% for user in buyer_sales %}
+            <tr>
+                <td> {{use.codename}} </td>
+                <td>  to {{user.codename}} </td>
+                <td>
+                    {% with a=use.codename|add:user.codename %}
+                        {% if a in keys_paths %}
+                            {% with path=dict_info_paths|keyvalue:a %}
+                                {% if path.chosenP %}
+                                    chosen
+                                {% else %}
+                                    not chosen
+                                {% endif %}
+                            {% endwith %}
+                            {% with d=dict_paths|keyvalue:a %}
+                                {{ d.as_p }}
+                            {% endwith %}
+                        {% endif %}
+                     {% endwith %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" name="submitP" value="Edit">
+    </form>
+-----------------------------------------------
 {% if not first_week %}
 <h3> Transaction </h3>
 <h4> Please confirm the transactions to validate. </h4>
@@ -39,14 +77,16 @@
                 {% for good in goods_sales %}
                 <td>
                     {% with a=use.codename|add:user.codename|add:good.idG %}
-                        {% with order=dict_info_sales|keyvalue:a %}
-                            {{order.quanO}}
-                        {% endwith %}
-                    {% endwith %}
-                    {% with c=use.codename|add:user.codename|add:good.idG %}
-                        {% with d=dict_sales|keyvalue:c %}
-                            {{ d.as_p }}
-                        {% endwith %}
+                        {% if a in keys_sales %}
+                            {% with order=dict_info_sales|keyvalue:a %}
+                                Order: {{order.quanO}}
+                            {% endwith %}
+                            {% with d=dict_sales|keyvalue:a %}
+                                {{ d.as_p }}
+                            {% endwith %}
+                        {% else %}
+                            /X/
+                        {% endif %}
                      {% endwith %}
                 </td>
                 {% endfor %}

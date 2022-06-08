@@ -12,7 +12,7 @@
         </tr>
     {% for user in all_users %}
         <tr>
-            <td> <p> {{ user }} </p> </td>
+            <td> <p> {{ user.username }} </p> </td>
             <td> {% if user.is_superuser %} <mark> admin </mark>
                  {% else %} <em> {{ user.groups.all.0 }} </em> {% endif %} </td>
             <td>  <p> {{ user.codename }}</p> </td>
