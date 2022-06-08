@@ -337,9 +337,12 @@ def new_week(request):
         stock_product_4.save()
 
     for user in User.objects.all():
-        new_funds = user.funds - user.fixed_costs
+        new_funds = user.funds - user.fixed_cost
         user.funds = new_funds
         user.validate = False
+        new = user.funds - user.numT * Worker.objects.get(id__exact='0').sal
+        user.funds = new
         user.save()
+
 
     return redirect('/')
