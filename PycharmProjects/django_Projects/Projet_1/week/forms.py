@@ -3,6 +3,7 @@ from django.forms import ModelForm, BaseModelFormSet
 from django import forms
 from django.core.exceptions import ValidationError
 from data.models import CustomUser, Stock, Order, Week
+from django.contrib.auth.forms import UserChangeForm
 
 User = get_user_model()
 
@@ -87,9 +88,9 @@ class BaseSalesLFormset(BaseModelFormSet):
         return cleaned_data
 
 
-class WorkerFormset(ModelForm):
+class WorkerForm(UserChangeForm):
     password = None
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ('numT', )

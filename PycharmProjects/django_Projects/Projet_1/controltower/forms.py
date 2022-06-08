@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserChangeForm
-from data.models import Goods
+from data.models import Goods, Worker
+from django import forms
 
 User = get_user_model()
 
@@ -21,3 +22,15 @@ class GoodChangeForm(UserChangeForm):
     class Meta:
         model = Goods
         fields = ('nameG', 'durG',)
+
+
+
+class WorkersForm(UserChangeForm):
+
+    password = None
+
+    class Meta:
+        model = Worker
+        fields = ('eff', 'sal',)
+
+

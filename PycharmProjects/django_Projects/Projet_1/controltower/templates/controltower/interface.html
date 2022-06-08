@@ -1,6 +1,13 @@
 {% extends 'data/base_generic.html' %}
-
+{% load custom_tags %}
 {% block content %}
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
     <h1> Control Tower Interface</h1>
     <h2> All users :</h2>
 
@@ -33,6 +40,17 @@
         </tr>
     {% endfor %}
     </table>
+
+    <form method="post" >
+         {% csrf_token %}
+         <table>
+            {{ f.as_table }}
+             <tr>
+                <td></td>
+                <td><input type="submit" name="submit" value="Edit" /></td>
+            </tr>
+         </table>
+    </form>
 
 {% if can_begin %}  <!-- if everyone has validated -->
 <form action='valid' method='GET'>

@@ -62,3 +62,9 @@ class Transaction(models.Model):
     priceTransport = models.FloatField(default=0)
     verifiedT = models.BooleanField(default=False)
     transporter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tran_transporter', default=1)
+
+
+class Worker(models.Model):
+    id = models.CharField(default=0, max_length=200, primary_key=True)
+    eff = models.FloatField()
+    sal = models.FloatField()

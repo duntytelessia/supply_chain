@@ -3,9 +3,11 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
-from controltower.forms import GroupChangeForm, GoodChangeForm
-from data.models import Goods, Week, Order, Transaction, Stock
-from django.core.exceptions import ValidationError
+from controltower.forms import GroupChangeForm, GoodChangeForm, WorkersForm
+from data.models import Goods, Week, Order, Transaction, Stock, Worker
+from django.http import HttpResponseRedirect
+from controltower.forms import *
+
 
 User = get_user_model()
 
@@ -22,10 +24,25 @@ def interface(request):
             count_validate += 1
     can_begin = (count_has_group == count_validate)     # we can start the simulation
 
+    if request.method == 'POST':
+        f = WorkersForm(request.POST, instance=Worker.objects.get(id__exact='0'))  # changes group
+        if f.is_valid():
+            f.save()
+            messages.success(request, 'Worker info changed')
+            return redirect('/controltower')
+
+    else:
+        f = WorkersForm(instance=Worker.objects.get(id__exact='0'))
+
+
+
+
+
     context = {
         'all_users': all_users,
         'can_begin': can_begin,
         'has_begun': has_begun,
+        'f': f,
     }
     return render(request, 'controltower/interface.html', context=context)
 

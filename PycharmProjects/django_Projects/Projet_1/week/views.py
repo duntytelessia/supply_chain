@@ -4,10 +4,10 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, user_passes_test
-from data.models import Week, CustomUser, Goods, Order, Transaction, Stock
+from data.models import Week, CustomUser, Goods, Order, Transaction, Stock, Worker
 from django.forms import formset_factory, modelformset_factory
 from week.forms import *
-from week.forms import ChangeUser_1, ChangeUser
+from week.forms import ChangeUser_1, ChangeUser, WorkerForm
 from django.db.models import Sum
 
 User = get_user_model()
@@ -161,8 +161,9 @@ def actorL(request, week, username):
 
 
     userr = request.user
-    eff = 100
-    sal = 100
+    worker = Worker.objects.get(id__exact='0')
+    eff = worker.eff
+    sal = worker.sal
     numT = userr.numT
     cap = userr.maxT + userr.numT * eff
 
@@ -216,12 +217,7 @@ def actorL(request, week, username):
         if week.week == 1:
             form_validate = ChangeUser_1(instance=User.objects.get(username__exact=username))
 
-        keys_worker = request.user.codename
-        dict_worker = {keys_worker: request.user.numT}
-        WorkerFormSet = modelformset_factory(CustomUser, fields=['numT'], formset=WorkerFormset,
-                                            labels={'numT': 'Number of worker'}, extra=0)
-
-        formset_worker = WorkerFormSet(instance=User.objects.get(username__exact=username))
+        f_w = WorkerForm(instance=CustomUser.objects.get(username__exact=username))
 
         if request.method == 'POST':
             if 'submitA' in request.POST:
@@ -244,20 +240,16 @@ def actorL(request, week, username):
                     user.save()
                     messages.success(request, 'Change effective')
                     return HttpResponseRedirect(request.path_info)
-            if 'submitT' in request.POST:
-                formset_worker = WorkerFormSet(request.POST, instance=CustomUser.objects.get(username__exact=username))
-                formset_worker.save()
-                user = User.objects.get(username__exact=username)
-                messages.success(request, 'Validated')
-                user.save()
-                return HttpResponseRedirect(request.path_info)
-            if 'numT' in request.POST :
-                user = User.objects.get(username__exact=username)
-                user.save()
-                messages.success(request, 'Change effective')
-                return HttpResponseRedirect(request.path_info)
+            if 'submitW' in request.POST:
+                f_w = WorkerForm(request.POST, instance=CustomUser.objects.get(username__exact=username))  # changes group
+                if f_w.is_valid():
+                    f_w.save()
+                    messages.success(request, 'Worker number info changed')
+                    return HttpResponseRedirect(request.path_info)
+            else:
+                f_w = WorkerForm(instance=CustomUser.objects.get(username__exact=username))
         formlayout(formset_sales, keys_sales, dict_sales)
-        formlayout(formset_worker, keys_worker, dict_worker)
+
 
         context = {
             'user': user,
@@ -275,9 +267,7 @@ def actorL(request, week, username):
             'eff': eff,
             'sal': sal,
             'numT': numT,
-            'dict_worker': dict_worker,
-            'formset_worker': formset_worker,
-            'keys_worker': keys_worker,
+            'f_w': f_w,
         }
         if week.week == 1:
             context.update({'form_validate': form_validate})
@@ -293,8 +283,9 @@ def actor(request, week, username):
     logistics = User.objects.filter(groups__name__exact='Logistics')
 
     userr = request.user
-    eff = 100
-    sal = 100
+    worker = Worker.objects.get(id__exact='0')
+    eff = worker.eff
+    sal = worker.sal
     numT = userr.numT
     cap = userr.maxT + userr.numT * eff
 
@@ -552,12 +543,7 @@ def actor(request, week, username):
     else:
         form_validate = ChangeUser(instance=User.objects.get(username__exact=username))
 
-    keys_worker = request.user.codename
-    dict_worker = {keys_worker: request.user.numT}
-    WorkerFormSet = modelformset_factory(CustomUser, fields=['numT'], formset=WorkerFormset,
-                                         labels={'numT': 'Number of worker'}, extra=0)
-
-    formset_worker = WorkerFormSet(instance=User.objects.get(username__exact=username))
+    f_w = WorkerForm(instance=CustomUser.objects.get(username__exact=username))
 
     if request.method == 'POST':
         if 'submitS' in request.POST:
@@ -626,24 +612,20 @@ def actor(request, week, username):
                 messages.success(request, 'Change effective')
                 return HttpResponseRedirect(request.path_info)
 
-        if 'submitT' in request.POST:
-            formset_worker = WorkerFormSet(request.POST, instance=CustomUser.objects.get(username__exact=username))
-            formset_worker.save()
-            user = User.objects.get(username__exact=username)
-            messages.success(request, 'Validated')
-            user.save()
-            return HttpResponseRedirect(request.path_info)
-        if 'numT' in request.POST :
-            user = User.objects.get(username__exact=username)
-            user.save()
-            messages.success(request, 'Change effective')
-            return HttpResponseRedirect(request.path_info)
+        if 'submitW' in request.POST:
+            f_w = WorkerForm(request.POST, instance=CustomUser.objects.get(username__exact=username))  # changes group
+            if f_w.is_valid():
+                f_w.save()
+                messages.success(request, 'Worker number info changed')
+                return HttpResponseRedirect(request.path_info)
+        else:
+            f_w = WorkerForm(instance=CustomUser.objects.get(username__exact=username))
 
 
     # form layout
     formlayout(formset_stock, keys_stock, dict_stock)
     formlayout(formset_sales, keys_sales, dict_sales)
-    formlayout(formset_worker, keys_worker, dict_worker)
+
     if group.name == "Factories":
         formlayout(formset_buy_1, keys_buy_1, dict_buy_1)
         formlayout(formset_buy_2, keys_buy_2, dict_buy_2)
@@ -688,9 +670,7 @@ def actor(request, week, username):
         'eff': eff,
         'sal': sal,
         'numT': numT,
-        'dict_worker': dict_worker,
-        'formset_worker': formset_worker,
-        'keys_worker': keys_worker,
+        'f_w': f_w,
     }
     if group.name == "Factories":
         context['dict_buy_1'] = dict_buy_1

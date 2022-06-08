@@ -81,24 +81,18 @@
             <td> Salary </td>
             <td> {{ sal }} </td>
         </tr>
-        <tr>
-            <td> Number of worker </td>
-            <td>
-            <form method="post">
-        {{ formset_worker.management_form }}
-        {{ formset_worker.non_form_errors }}
-        {% csrf_token %}
-            {% with c=keys_worker %}
-                {% with d=dict_worker|keyvalue:c %}
-                    {{ d.as_p }}
-                {% endwith %}
-            {% endwith %}
-        <input type="number" name="numT" value="{{user.numT}}">
-        <input type="submit" name="submitT" value="Confirm">
-    </form>
-            </td>
-    </tr>
     </table>
+        <form method="post" >
+             {% csrf_token %}
+             <table>
+                {{ f_w.as_table }}
+                 <tr>
+                    <td></td>
+                    <td><input type="submit" name="submitW" value="Edit" /></td>
+                </tr>
+             </table>
+        </form>
+
 
 -------------------------------------------------------------
 {% if first_week %}
