@@ -259,19 +259,21 @@ def new_week(request):
         stock_raw_3 = Stock.objects.get(goods__idG__exact='R3', idU__exact=user, dateS=new_week)
         stock_product_1 = Stock.objects.get(goods__idG__exact='P1', idU__exact=user, dateS=new_week)
         stock_product_3 = Stock.objects.get(goods__idG__exact='P3', idU__exact=user, dateS=new_week)
+        worker = Worker.objects.get(id__exact='0')
+        capa = user.maxT + user.numT * worker.eff
 
-        if stock_raw_1.quanS > user.maxT:
-            stock_product_1.quanS = stock_product_1.quanS + user.maxT
-            stock_raw_1.quanS = stock_raw_1.quanS - user.maxT
+        if stock_raw_1.quanS > capa:
+            stock_product_1.quanS = stock_product_1.quanS + capa
+            stock_raw_1.quanS = stock_raw_1.quanS - capa
         else:
             stock_product_1.quanS = stock_product_1.quanS + stock_raw_1.quanS
             stock_raw_1.quanS = 0
         stock_raw_1.save()
         stock_product_1.save()
 
-        if stock_raw_3.quanS > user.maxT:
-            stock_product_3.quanS = stock_product_3.quanS + user.maxT
-            stock_raw_3.quanS = stock_raw_3.quanS - user.maxT
+        if stock_raw_3.quanS > capa:
+            stock_product_3.quanS = stock_product_3.quanS + capa
+            stock_raw_3.quanS = stock_raw_3.quanS - capa
         else:
             stock_product_3.quanS = stock_product_3.quanS + stock_raw_3.quanS
             stock_raw_3.quanS = 0
@@ -283,19 +285,21 @@ def new_week(request):
         stock_raw_4 = Stock.objects.get(goods__idG__exact='R4', idU__exact=user, dateS=new_week)
         stock_product_2 = Stock.objects.get(goods__idG__exact='P2', idU__exact=user, dateS=new_week)
         stock_product_4 = Stock.objects.get(goods__idG__exact='P4', idU__exact=user, dateS=new_week)
+        worker = Worker.objects.get(id__exact='0')
+        capa = user.maxT + user.numT * worker.eff
 
-        if stock_raw_2.quanS > user.maxT:
-            stock_product_2.quanS = stock_product_2.quanS + user.maxT
-            stock_raw_2.quanS = stock_raw_2.quanS - user.maxT
+        if stock_raw_2.quanS > capa:
+            stock_product_2.quanS = stock_product_2.quanS + capa
+            stock_raw_2.quanS = stock_raw_2.quanS - capa
         else:
             stock_product_2.quanS = stock_product_2.quanS + stock_raw_2.quanS
             stock_raw_2.quanS = 0
         stock_raw_2.save()
         stock_product_2.save()
 
-        if stock_raw_4.quanS > user.maxT:
-            stock_product_4.quanS = stock_product_4.quanS + user.maxT
-            stock_raw_4.quanS = stock_raw_4.quanS - user.maxT
+        if stock_raw_4.quanS > capa:
+            stock_product_4.quanS = stock_product_4.quanS + capa
+            stock_raw_4.quanS = stock_raw_4.quanS - capa
         else:
             stock_product_4.quanS = stock_product_4.quanS + stock_raw_4.quanS
             stock_raw_4.quanS = 0
@@ -309,11 +313,13 @@ def new_week(request):
         stock_product_4 = Stock.objects.get(goods__idG__exact='P4', idU__exact=user, dateS=new_week)
         stock_final_1 = Stock.objects.get(goods__idG__exact='F1', idU__exact=user, dateS=new_week)
         stock_final_2 = Stock.objects.get(goods__idG__exact='F2', idU__exact=user, dateS=new_week)
+        worker = Worker.objects.get(id__exact='0')
+        capa = user.maxT + user.numT * worker.eff
 
-        if stock_product_1.quanS > user.maxT and stock_product_2.quanS > user.maxT:
-            stock_final_1.quanS = stock_final_1.quanS + user.maxT
-            stock_product_1.quanS = stock_product_1.quanS - user.maxT
-            stock_product_2.quanS = stock_product_2.quanS - user.maxT
+        if stock_product_1.quanS > capa and stock_product_2.quanS > capa:
+            stock_final_1.quanS = stock_final_1.quanS + capa
+            stock_product_1.quanS = stock_product_1.quanS - capa
+            stock_product_2.quanS = stock_product_2.quanS - capa
         else:
             quan = min(stock_product_1.quanS, stock_product_2.quanS)
             stock_final_1.quanS = stock_final_1.quanS + quan
@@ -323,10 +329,10 @@ def new_week(request):
         stock_product_1.save()
         stock_product_2.save()
 
-        if stock_product_3.quanS > user.maxT and stock_product_4.quanS > user.maxT:
-            stock_final_2.quanS = stock_final_2.quanS + user.maxT
-            stock_product_3.quanS = stock_product_3.quanS - user.maxT
-            stock_product_4.quanS = stock_product_4.quanS - user.maxT
+        if stock_product_3.quanS > capa and stock_product_4.quanS > capa:
+            stock_final_2.quanS = stock_final_2.quanS + capa
+            stock_product_3.quanS = stock_product_3.quanS - capa
+            stock_product_4.quanS = stock_product_4.quanS - capa
         else:
             quan = min(stock_product_3.quanS, stock_product_4.quanS)
             stock_final_2.quanS = stock_final_2.quanS + quan

@@ -153,32 +153,32 @@ def initialize(request):
                                  is_active=True,
                                  is_superuser=True
                                  )
-        User.objects.create_user(username='S1',
+        User.objects.create_user(username='U1',
                                  email='s1@s.com',
                                  password='1234',
                                  is_active=True,
                                  )
-        User.objects.create_user(username='S2',
+        User.objects.create_user(username='U2',
                                  email='s2@s.com',
                                  password='1234',
                                  is_active=True,
                                  )
-        User.objects.create_user(username='F1',
+        User.objects.create_user(username='U3',
                                  email='f1@f.com',
                                  password='1234',
                                  is_active=True,
                                  )
-        User.objects.create_user(username='W1',
+        User.objects.create_user(username='U4',
                                  email='w1@w.com',
                                  password='1234',
                                  is_active=True,
                                  )
-        User.objects.create_user(username='L1',
+        User.objects.create_user(username='U5',
                                  email='l1@l.com',
                                  password='1234',
                                  is_active=True,
                                  )
-        User.objects.create_user(username='D1',
+        User.objects.create_user(username='U6',
                                  email='d1@d.com',
                                  password='1234',
                                  is_active=True,

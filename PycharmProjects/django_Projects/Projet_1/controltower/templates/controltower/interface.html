@@ -35,7 +35,7 @@
             <td> {% if user.validate %} X {% endif %}</td> <!-- show X if the user agrees with his role -->
             <!-- deletes non-admin users -->
             {% if not has_begun %}
-            <td> {% if not user.is_superuser %} <a href="del/{{user}}"> delete user </a> {% endif %} </td>
+            <td> {% if not user.is_superuser %} <a href="del/{{user.username}}"> delete user </a> {% endif %} </td>
             {% endif %}
         </tr>
     {% endfor %}

@@ -3,7 +3,7 @@ from django.forms import ModelForm, BaseModelFormSet, BaseFormSet
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserChangeForm
-from data.models import CustomUser, Stock, Order, Week, Transaction
+from data.models import CustomUser, Stock, Order, Week, Transaction, Worker
 
 User = get_user_model()
 
@@ -22,7 +22,6 @@ class ChangeUser(ModelForm):
     class Meta:
         model = User
         fields = ('validate',)
-
 
 
 class LogicForm(forms.Form):
@@ -94,6 +93,8 @@ class BaseSalesLFormset(BaseModelFormSet):
         if any(self.errors):
             return
 
+        worker = Worker.objects.get(id__exact='0')
+        capa = self.user.maxT + self.user.numT * worker.eff
         total = 0
         for form in self.forms:
             tran = form.instance
@@ -105,7 +106,7 @@ class BaseSalesLFormset(BaseModelFormSet):
                 raise ValidationError(str(tran.sellerT) + ' to ' + str(tran.buyerT) + ': '
                                       + str(tran.goods) + '     Transaction is greater than order')
 
-        if total > self.user.maxT:
+        if total > capa:
             raise ValidationError('The transactions are greater than the max capacity')
 
         return cleaned_data

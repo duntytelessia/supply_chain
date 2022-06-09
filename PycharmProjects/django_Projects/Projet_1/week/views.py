@@ -158,7 +158,6 @@ def actorL(request, week, username):
     week = Week.objects.get(week__exact=week)
     first_week = (week.week == 1)
     logistics = User.objects.filter(groups__name__exact='Logistics')
-
     userr = request.user
     worker = Worker.objects.get(id__exact='0')
     eff = worker.eff
@@ -224,11 +223,12 @@ def actorL(request, week, username):
         f_w = WorkerForm(instance=CustomUser.objects.get(username__exact=username))
 
         if request.method == 'POST':
+            check = True
             if 'submitP' in request.POST:
                 formset_paths = PathsFormSet(request.POST, queryset=Path.objects.filter(idP__in=ids_paths))
                 if formset_paths.is_valid():
                     formset_paths.save()
-                    messages.success(request, 'Prices Changed')
+                    messages.success(request, 'Paths Edited')
                     return HttpResponseRedirect(request.path_info)
             if 'submitA' in request.POST:
                 formset_sales = SalesFormSet(user, request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
@@ -256,8 +256,9 @@ def actorL(request, week, username):
                     f_w.save()
                     messages.success(request, 'Worker number info changed')
                     return HttpResponseRedirect(request.path_info)
-            else:
-                f_w = WorkerForm(instance=CustomUser.objects.get(username__exact=username))
+        else:
+            f_w = WorkerForm(instance=CustomUser.objects.get(username__exact=username))
+            check = False
         formlayout(formset_sales, keys_sales, dict_sales)
         formlayout(formset_paths, keys_paths, dict_paths)
 
@@ -276,7 +277,7 @@ def actorL(request, week, username):
             'keys_sales': keys_sales,
             'dict_paths': dict_paths,
             'dict_info_paths': dict_info_paths,
-            'formset_paths': formset_sales,
+            'formset_paths': formset_paths,
             'keys_paths': keys_paths,
             'cap': cap,
             'quann': quann,
@@ -284,6 +285,7 @@ def actorL(request, week, username):
             'sal': sal,
             'numT': numT,
             'f_w': f_w,
+            'check': check,
         }
         if week.week == 1:
             context.update({'form_validate': form_validate})
