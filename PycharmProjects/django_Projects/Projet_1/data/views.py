@@ -4,8 +4,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from .forms import CustomUserCreationForm, UserChangeForm, ValidationForm
-
 from .models import Goods, Week
+
 
 User = get_user_model()
 
@@ -180,5 +180,4 @@ def initialize(request):
                                  )
 
     return render(request, 'data/initialize.html')
-
 

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'controltower.apps.ControltowerConfig',
     'week.apps.WeekConfig',
 
+
 ]
 
 MIDDLEWARE = [

@@ -29,7 +29,7 @@ def week(request):
     if request.user.is_superuser:
         return render(request, 'week/week.html', context=context)
     else:
-        return redirect('/week/'+str(last_week.week)+'/'+request.user.username)
+        return redirect('/week/' + str(last_week.week) + '/' + request.user.username)
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -97,12 +97,11 @@ def modify_as_controltower(request, week):
             list_a1.append(id)
             keys_a1.append(seller.codename + good.idG)
 
-
     # form creation
     TransactionFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceT'],
                                               labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
     OrderFormSet = modelformset_factory(Order, fields=['quanO'],
-                                              labels={'quanO': 'Q'}, extra=0)
+                                        labels={'quanO': 'Q'}, extra=0)
 
     if request.method == 'POST':
         if 'submitA' in request.POST:
@@ -147,11 +146,10 @@ def modify_as_controltower(request, week):
     formlayout(formset_a1, keys_a1, dict_a1)
     context.update({'formset_a1': formset_a1})
 
-
     return render(request, 'week/modify_as_controltower.html', context=context)
 
-def actorL(request, week, username):
 
+def actorL(request, week, username):
     # initializations
     user = User.objects.get(username__exact=username)
     group = user.groups.all().first()
@@ -193,12 +191,13 @@ def actorL(request, week, username):
         for seller in seller_sales:
             for buyer in buyer_sales:
                 for good in goods_sales:
-                    id = seller.codename + buyer.codename + good.idG + str(week.week)+ '-' + request.user.codename
+                    id = seller.codename + buyer.codename + good.idG + str(week.week) + '-' + request.user.codename
                     tran_exists = Transaction.objects.filter(idT=id).exists()
                     if Transaction.objects.filter(idT__exact=id).exists():
                         tran = Transaction.objects.get(idT__exact=id)
                     else:
-                        tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer, dateT=week, transporter=user)
+                        tran = Transaction(idT=id, sellerT=seller, goods=good, buyerT=buyer, dateT=week,
+                                           transporter=user)
                     tran.save()
                     ids_sales.append(id)
                     keys_sales.append(seller.codename + buyer.codename + good.idG)
@@ -258,8 +257,8 @@ def actorL(request, week, username):
             context.update({'form_validate': form_validate})
         return render(request, 'week/lo.html', context=context)
 
-def actor(request, week, username):
 
+def actor(request, week, username):
     # initializations
     user = User.objects.get(username__exact=username)
     group = user.groups.all().first()
@@ -280,11 +279,11 @@ def actor(request, week, username):
     if quann <= cap:
         num = 0
     else:
-        num = int((quann - cap) / eff)+1
+        num = int((quann - cap) / eff) + 1
 
     # get logistics out of this page
     if group.name == 'Logistics':
-        return redirect('/week/' + str(week)+'/'+user.username+'/L')
+        return redirect('/week/' + str(week) + '/' + user.username + '/L')
     if group.name == 'Suppliers_A':
         goods_stock = Goods.objects.filter(idG__in=['R1', 'R3', 'P1', 'P3'])
         goods_buy = Goods.objects.filter(idG__in=['R1', 'R3'])
@@ -400,7 +399,8 @@ def actor(request, week, username):
                     tran.save()
                     ids_buy.append(id)
                     keys_buy.append(seller.codename + logic.codename + good.idG)
-                    dict_info_buy.update({seller.codename + logic.codename + good.idG: Transaction.objects.get(idT__exact=id)})
+                    dict_info_buy.update(
+                        {seller.codename + logic.codename + good.idG: Transaction.objects.get(idT__exact=id)})
     else:
         for good in goods_buy:
             for seller in seller_buy:
@@ -511,7 +511,7 @@ def actor(request, week, username):
         OrderFormSet = modelformset_factory(Order, fields=['quanO'],
                                             labels={'quanO': 'Q'}, extra=0)
         SalesFormSet = modelformset_factory(Transaction, formset=BaseSalesFormset, fields=['quanT', 'priceT'],
-                                                  labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
+                                            labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
 
     # forms
     if group.name == "Factories":
@@ -661,10 +661,12 @@ def actor(request, week, username):
         context['formset_buy'] = formset_buy
         context['formset_order'] = formset_order
 
-
     return render(request, 'week/actor.html', context=context)
-
 
 
 def notallowed(request):
     return render(request, 'week/notallowed.html')
+
+
+def simulb(request, week, username):
+    return render(request, 'week/form_simulB.html')

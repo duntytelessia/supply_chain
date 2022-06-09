@@ -4,7 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="772e805a-dc65-47e9-8bc7-e02366851017" name="Changes" comment="" />
+    <list default="true" id="772e805a-dc65-47e9-8bc7-e02366851017" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/form_simulB.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/Projet_1/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/Projet_1/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/data/templates/data/base_generic.html" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/data/templates/data/base_generic.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/data/templates/data/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/data/templates/data/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/data/templates/data/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/data/templates/data/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/data/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/data/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/actor.html" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/actor.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/base_info.html" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/base_info.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/fact.html" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/fact.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/lo.html" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/lo.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/modify_as_controltower.html" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/modify_as_controltower.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/stock_supp_a.html" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/templates/week/stock_supp_a.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/PycharmProjects/django_Projects/Projet_1/week/views.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,6 +42,7 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2AEtAZuTn9nQwBidKuKlB2T5cRD" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -38,6 +56,11 @@
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\m1552\Desktop\Stage\supply_chain\PycharmProjects\django_Projects\Projet_1\week\templates\week" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

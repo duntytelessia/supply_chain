@@ -1,7 +1,6 @@
 {% extends 'week/base_info.html' %}
 {% load custom_tags %}
 {% block lambda %}
-
 <form method="post">
     {{ formset.management_form }}
     {% csrf_token %}
