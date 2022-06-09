@@ -46,7 +46,7 @@ def interface(request):
         tverified = t.verifiedT
 
     oo = Order.objects.all()
-    
+
     context = {
         'all_users': all_users,
         'can_begin': can_begin,
