@@ -79,14 +79,14 @@
         {% for t in tt %}
         </tr>
         <tr>
-            <td> {{ tid }} </td>
-            <td> {{ tseller }} </td>
-            <td> {{ tbuyer }} </td>
-            <td> {{ tgoods }} </td>
-            <td> {{ tquan }} </td>
-            <td> {{ tdate }} </td>
-            <td> {{ tprice }} </td>
-            <td> {{ tverified }} </td>
+            <td> {{ t.idT }} </td>
+            <td> {{ t.sellerT }} </td>
+            <td> {{ t.buyerT }} </td>
+            <td> {{ t.goodsT }} </td>
+            <td> {{ t.quanT }} </td>
+            <td> {{ t.dateT }} </td>
+            <td> {{ t.priceT }} </td>
+            <td> {{ t.verifiedT }} </td>
         </tr>
     {% endfor %}
     </table>
