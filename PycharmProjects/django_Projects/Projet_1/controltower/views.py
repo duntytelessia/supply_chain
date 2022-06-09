@@ -75,15 +75,23 @@ def del_user(request, username):    # username comes from the second part of the
 
 @user_passes_test(lambda u: u.is_superuser)
 def edit_good(request, idg):    # idG comes from the second part of the url
+
+    good = Goods.objects.get(idG__exact=idg)
     if request.method == 'POST':
-        f = GoodChangeForm(request.POST, instance=Goods.objects.get(idG__exact=idg))  # changes group
+        if good.idG in ['F1', 'F2']:
+            f = GoodChangeForm(request.POST, instance=good)  # changes good
+        else:
+            f = GoodChangeForm_1(request.POST, instance=good)
         if f.is_valid():
             f.save()
             messages.success(request, 'Info changed successfully')
             return redirect('/controltower/valid')
 
     else:
-        f = GoodChangeForm(instance=Goods.objects.get(idG__exact=idg))
+        if good.idG in ['F1', 'F2']:
+            f = GoodChangeForm(instance=good)  # changes good
+        else:
+            f = GoodChangeForm_1(instance=good)
 
     return render(request, 'controltower/editgood.html', {'form': f, 'idG': idg})
 
@@ -177,6 +185,7 @@ def costs(request):
     f = CostFormSet(queryset=all_users)
     return render(request, 'controltower/costs.html', context={'f': f})
 
+
 @user_passes_test(lambda u: u.is_superuser)
 def begin_simulation(request):
 
@@ -262,21 +271,25 @@ def new_week(request):
         worker = Worker.objects.get(id__exact='0')
         capa = user.maxT + user.numT * worker.eff
 
-        if stock_raw_1.quanS > capa:
+        # good 1
+        c = stock_raw_1.goods.coefG
+        if stock_raw_1.quanS * c > capa:
             stock_product_1.quanS = stock_product_1.quanS + capa
-            stock_raw_1.quanS = stock_raw_1.quanS - capa
+            stock_raw_1.quanS = stock_raw_1.quanS - capa * c
         else:
-            stock_product_1.quanS = stock_product_1.quanS + stock_raw_1.quanS
-            stock_raw_1.quanS = 0
+            stock_product_1.quanS = stock_product_1.quanS + stock_raw_1.quanS // c
+            stock_raw_1.quanS = stock_raw_1.quanS % c
         stock_raw_1.save()
         stock_product_1.save()
 
-        if stock_raw_3.quanS > capa:
+        # good 3
+        c = stock_raw_3.goods.coefG
+        if stock_raw_3.quanS * c > capa:
             stock_product_3.quanS = stock_product_3.quanS + capa
-            stock_raw_3.quanS = stock_raw_3.quanS - capa
+            stock_raw_3.quanS = stock_raw_3.quanS - capa * c
         else:
-            stock_product_3.quanS = stock_product_3.quanS + stock_raw_3.quanS
-            stock_raw_3.quanS = 0
+            stock_product_3.quanS = stock_product_3.quanS + stock_raw_3.quanS // c
+            stock_raw_3.quanS = stock_raw_3.quanS % c
         stock_raw_3.save()
         stock_product_3.save()
 
@@ -288,21 +301,25 @@ def new_week(request):
         worker = Worker.objects.get(id__exact='0')
         capa = user.maxT + user.numT * worker.eff
 
-        if stock_raw_2.quanS > capa:
+        # good 2
+        c = stock_raw_2.goods.coefG
+        if stock_raw_2.quanS * c > capa:
             stock_product_2.quanS = stock_product_2.quanS + capa
-            stock_raw_2.quanS = stock_raw_2.quanS - capa
+            stock_raw_2.quanS = stock_raw_2.quanS - capa * c
         else:
-            stock_product_2.quanS = stock_product_2.quanS + stock_raw_2.quanS
-            stock_raw_2.quanS = 0
+            stock_product_2.quanS = stock_product_2.quanS + stock_raw_2.quanS // c
+            stock_raw_2.quanS = stock_raw_2.quanS % c
         stock_raw_2.save()
         stock_product_2.save()
 
-        if stock_raw_4.quanS > capa:
+        # good 4
+        c = stock_raw_4.goods.coefG
+        if stock_raw_4.quanS * c > capa:
             stock_product_4.quanS = stock_product_4.quanS + capa
-            stock_raw_4.quanS = stock_raw_4.quanS - capa
+            stock_raw_4.quanS = stock_raw_4.quanS - capa * c
         else:
-            stock_product_4.quanS = stock_product_4.quanS + stock_raw_4.quanS
-            stock_raw_4.quanS = 0
+            stock_product_4.quanS = stock_product_4.quanS + stock_raw_4.quanS // c
+            stock_raw_4.quanS = stock_raw_4.quanS % c
         stock_raw_4.save()
         stock_product_4.save()
 
@@ -316,28 +333,34 @@ def new_week(request):
         worker = Worker.objects.get(id__exact='0')
         capa = user.maxT + user.numT * worker.eff
 
-        if stock_product_1.quanS > capa and stock_product_2.quanS > capa:
+        # product 1
+        c1 = stock_product_1.goods.coefG
+        c2 = stock_product_2.goods.coefG
+        if stock_product_1.quanS * c1 > capa and stock_product_2.quanS * c2 > capa:
             stock_final_1.quanS = stock_final_1.quanS + capa
-            stock_product_1.quanS = stock_product_1.quanS - capa
-            stock_product_2.quanS = stock_product_2.quanS - capa
+            stock_product_1.quanS = stock_product_1.quanS - capa * c1
+            stock_product_2.quanS = stock_product_2.quanS - capa * c2
         else:
-            quan = min(stock_product_1.quanS, stock_product_2.quanS)
+            quan = min(stock_product_1.quanS // c1, stock_product_2.quanS // c2)
             stock_final_1.quanS = stock_final_1.quanS + quan
-            stock_product_1.quanS = stock_product_1.quanS - quan
-            stock_product_2.quanS = stock_product_2.quanS - quan
+            stock_product_1.quanS = stock_product_1.quanS - quan * c1
+            stock_product_2.quanS = stock_product_2.quanS - quan * c2
         stock_final_1.save()
         stock_product_1.save()
         stock_product_2.save()
 
-        if stock_product_3.quanS > capa and stock_product_4.quanS > capa:
+        # product 2
+        c1 = stock_product_3.goods.coefG
+        c2 = stock_product_4.goods.coefG
+        if stock_product_3.quanS * c1 > capa and stock_product_4.quanS * c2 > capa:
             stock_final_2.quanS = stock_final_2.quanS + capa
             stock_product_3.quanS = stock_product_3.quanS - capa
             stock_product_4.quanS = stock_product_4.quanS - capa
         else:
-            quan = min(stock_product_3.quanS, stock_product_4.quanS)
+            quan = min(stock_product_3.quanS // c1, stock_product_4.quanS // c2)
             stock_final_2.quanS = stock_final_2.quanS + quan
-            stock_product_3.quanS = stock_product_3.quanS - quan
-            stock_product_4.quanS = stock_product_4.quanS - quan
+            stock_product_3.quanS = stock_product_3.quanS - quan * c1
+            stock_product_4.quanS = stock_product_4.quanS - quan * c2
         stock_final_2.save()
         stock_product_3.save()
         stock_product_4.save()

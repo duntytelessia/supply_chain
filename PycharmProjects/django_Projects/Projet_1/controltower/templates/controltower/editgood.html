@@ -18,6 +18,7 @@
         <h1>Edit Good {{ idG }} - Production Chain Site</h1>
 
          <form method="post" >
+             {{form.non_form_errors}}
              {% csrf_token %}
              <table>
                 {{ form.as_table }}

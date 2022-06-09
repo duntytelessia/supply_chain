@@ -7,9 +7,9 @@ from django.core.exceptions import ValidationError
 class CustomUser(AbstractUser):
     validate = models.BooleanField(default=False)
     codename = models.CharField(max_length=10, default='A')
-    funds = models.FloatField(default=0)
+    funds = models.FloatField(default=0)  # keep
     maxT = models.FloatField(default=1000)
-    numT = models.IntegerField(default=0)
+    numT = models.IntegerField(default=0)  # keep
     fixed_cost = models.FloatField(default=1000)
 
     def __str__(self):
@@ -26,7 +26,8 @@ class Week(models.Model):
 class Goods(models.Model):
     idG = models.CharField(max_length=200, primary_key=True)
     nameG = models.CharField(max_length=200)
-    durG = models.PositiveIntegerField()
+    durG = models.PositiveIntegerField()  # keep
+    coefG = models.FloatField(default=1)  # it needs n good to transform in 1 other good.
 
     def __str__(self):
         return self.nameG
@@ -67,8 +68,8 @@ class Transaction(models.Model):
 
 class Worker(models.Model):
     id = models.CharField(default=0, max_length=200, primary_key=True)
-    eff = models.FloatField()
-    sal = models.FloatField()
+    eff = models.FloatField()  # keep
+    sal = models.FloatField()  # keep
 
 
 class Path(models.Model):
@@ -76,6 +77,6 @@ class Path(models.Model):
     sellerP = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='path_seller', default=2)
     buyerP = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='path_buyer', default=2)
     logicP = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='path_logic', default=1)
-    priceP = models.FloatField(default=0)
+    priceP = models.FloatField(default=0)  # keep
     chosenP = models.BooleanField(default=False)
 
