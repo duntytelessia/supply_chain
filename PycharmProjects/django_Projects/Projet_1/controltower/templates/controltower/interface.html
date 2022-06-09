@@ -41,6 +41,58 @@
     {% endfor %}
     </table>
 
+</p>
+------------------------Order------------------------
+    <table>
+        <tr>
+            <td>  id  </td>
+            <td>  seller  </td>
+            <td>  buyer  </td>
+            <td>  goods  </td>
+            <td>  quan  </td>
+            <td>  date  </td>
+        {% for o in oo %}
+        </tr>
+        <tr>
+            <td> {{ o.idO }} </td>
+            <td> {{ o.sellerO }} </td>
+            <td> {{ o.buyerO }} </td>
+            <td> {{ o.goodsO }} </td>
+            <td> {{ o.quanO }} </td>
+            <td> {{ o.dateO }} </td>
+        </tr>
+    {% endfor %}
+    </table>
+
+</p>
+------------------------Transaction------------------------
+    <table>
+        <tr>
+            <td>  id  </td>
+            <td>  seller  </td>
+            <td>  buyer  </td>
+            <td>  goods  </td>
+            <td>  quan  </td>
+            <td>  date  </td>
+            <td>  price  </td>
+            <td>  verified  </td>
+        {% for t in tt %}
+        </tr>
+        <tr>
+            <td> {{ tid }} </td>
+            <td> {{ tseller }} </td>
+            <td> {{ tbuyer }} </td>
+            <td> {{ tgoods }} </td>
+            <td> {{ tquan }} </td>
+            <td> {{ tdate }} </td>
+            <td> {{ tprice }} </td>
+            <td> {{ tverified }} </td>
+        </tr>
+    {% endfor %}
+    </table>
+
+</p>
+------------------------Worker------------------------
     <form method="post" >
          {% csrf_token %}
          <table>

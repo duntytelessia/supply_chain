@@ -34,6 +34,18 @@ def interface(request):
     else:
         f = WorkersForm(instance=Worker.objects.get(id__exact='0'))
 
+    tt = Transaction.objects.all()
+    for t in tt:
+        tid = t.idT
+        tseller = t.sellerT
+        tbuyer = t.buyerT
+        tgoods = t.goods
+        tquan = t.quanT
+        tdate = t.dateT
+        tprice = t.priceT
+        tverified = t.verifiedT
+
+    oo = Order.objects.all()
 
 
 
@@ -43,6 +55,17 @@ def interface(request):
         'can_begin': can_begin,
         'has_begun': has_begun,
         'f': f,
+        'tt': tt,
+        'tid': tid,
+        'tseller': tseller,
+        'tbuyer': tbuyer,
+        'tgoods': tgoods,
+        'tquan': tquan,
+        'tdate': tdate,
+        'tprice': tprice,
+        'tverified': tverified,
+        'oo' : oo,
+
     }
     return render(request, 'controltower/interface.html', context=context)
 
