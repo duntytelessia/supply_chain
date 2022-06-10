@@ -7,19 +7,25 @@ from django.core.exceptions import ValidationError
 class CustomUser(AbstractUser):
     validate = models.BooleanField(default=False)
     codename = models.CharField(max_length=10, default='A')
-    funds = models.FloatField(default=0)  # keep
     maxT = models.FloatField(default=1000)
-    numT = models.IntegerField(default=0)  # keep
-    fixed_cost = models.FloatField(default=1000)
 
     def __str__(self):
         return str(self.codename)
+
 
 class Week(models.Model):
     week = models.PositiveIntegerField()
 
     def __str__(self):
         return str(self.week)
+
+
+class InfoUser(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default=1)
+    date = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
+    funds = models.FloatField(default=0)
+    numT = models.IntegerField(default=0)
+    fixed_cost = models.FloatField(default=1000)
 
 
 # Marchandise
@@ -34,7 +40,6 @@ class Goods(models.Model):
 
     class Meta:
         verbose_name_plural = "Goods"
-
 
 
 class Stock(models.Model):
@@ -67,9 +72,9 @@ class Transaction(models.Model):
 
 
 class Worker(models.Model):
-    id = models.CharField(default=0, max_length=200, primary_key=True)
-    eff = models.FloatField()  # keep
-    sal = models.FloatField()  # keep
+    dateW = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
+    eff = models.FloatField(default=100)  # keep
+    sal = models.FloatField(default=100)  # keep
 
 
 class Path(models.Model):

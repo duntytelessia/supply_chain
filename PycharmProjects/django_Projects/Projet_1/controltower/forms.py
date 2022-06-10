@@ -40,7 +40,10 @@ class GoodChangeForm_1(UserChangeForm):
 
         coef = self.cleaned_data['coefG']
         if coef <= 0:
-            raise ValidationError("coeficient can't be lower than 0")
+            raise ValidationError("coefficient can't be lower than 0")
+
+        return cleaned_data
+
 
 class WorkersForm(UserChangeForm):
 

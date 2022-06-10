@@ -141,10 +141,6 @@ def initialize(request):
         good_f2 = Goods(idG='F2', nameG='juicy pork', durG=7)
         good_f2.save()
 
-    if not Worker.objects.all().exists():
-        worker = Worker(id='0', eff=100, sal=100)
-        worker.save()
-
     if not User.objects.all().exists():
         User.objects.create_user(username='admin',
                                  email='wenjie.liu1002@gmail.com',

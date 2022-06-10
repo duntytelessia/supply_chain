@@ -3,7 +3,7 @@ from django.forms import ModelForm, BaseModelFormSet, BaseFormSet
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserChangeForm
-from data.models import CustomUser, Stock, Order, Week, Transaction, Worker
+from data.models import CustomUser, Stock, Order, Week, Transaction, Worker, InfoUser
 
 User = get_user_model()
 
@@ -13,7 +13,7 @@ class ChangeUser_1(ModelForm):
 
     class Meta:
         model = User
-        fields = ('funds', 'validate', 'maxT')
+        fields = ('validate', 'maxT')
 
 
 class ChangeUser(ModelForm):
@@ -22,6 +22,13 @@ class ChangeUser(ModelForm):
     class Meta:
         model = User
         fields = ('validate',)
+
+
+class ChangeInfoUser(ModelForm):
+
+    class Meta:
+        model = InfoUser
+        fields = ('funds',)
 
 
 class LogicForm(forms.Form):
@@ -84,8 +91,9 @@ class BaseSalesFormset(BaseModelFormSet):
 
 class BaseSalesLFormset(BaseModelFormSet):
 
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, user, week, *args, **kwargs):
         self.user = user
+        self.week = week
         super(BaseSalesLFormset, self).__init__(*args, **kwargs)
 
     def clean(self):
@@ -93,8 +101,9 @@ class BaseSalesLFormset(BaseModelFormSet):
         if any(self.errors):
             return
 
-        worker = Worker.objects.get(id__exact='0')
-        capa = self.user.maxT + self.user.numT * worker.eff
+        worker = Worker.objects.get(dateW=self.week)
+        info = InfoUser.objects.get(user=self.user, date=self.week)
+        capa = self.user.maxT + info.numT * worker.eff
         total = 0
         for form in self.forms:
             tran = form.instance
@@ -112,9 +121,8 @@ class BaseSalesLFormset(BaseModelFormSet):
         return cleaned_data
 
 
-class WorkerForm(UserChangeForm):
-    password = None
+class WorkerForm(ModelForm):
 
     class Meta:
-        model = CustomUser
+        model = InfoUser
         fields = ('numT', )

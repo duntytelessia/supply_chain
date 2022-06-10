@@ -6,7 +6,7 @@
 <h2> Week {{ week }} </h2>
 <h3> {{ user.username }}</h3>
 <h4> Codename : {{ user.codename }} </h4> <h4> Role : {{group}} </h4>
-<h5> Funds : {{ user.funds }}</h5>
+<h5> Funds : {{ info_user.funds }}</h5>
 
 {% if messages %}
 <ul>
@@ -143,6 +143,18 @@
     {{ form_validate.as_p }}
     <input type="submit" name="submitV" value="Edit">
 </form>
+-------------------------------------------------------------
+<h3> Change funds </h3>
+<form method="post" >
+             {% csrf_token %}
+             <table>
+                {{ i_u.as_table }}
+                 <tr>
+                    <td></td>
+                    <td><input type="submit" name="submitI" value="Edit" /></td>
+                </tr>
+             </table>
+    </form>
 {% else %}
 <h3> Validate : {{request.user.validate}} </h3>
 {% endif %}

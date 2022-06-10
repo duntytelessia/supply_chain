@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from controltower.forms import GroupChangeForm, GoodChangeForm, WorkersForm
-from data.models import Goods, Week, Order, Transaction, Stock, Worker, Path
+from data.models import Goods, Week, Order, Transaction, Stock, Worker, Path, InfoUser
 from django.forms import modelformset_factory
 from controltower.forms import *
 
@@ -17,6 +17,8 @@ def interface(request):
     has_begun = Week.objects.all().exists()
     all_users = User.objects.all()
     count_has_group, count_validate = 0, 0
+    weeks = Week.objects.all().order_by('week')
+    last_week = weeks.last()
     for u in all_users:   # to know if each user with a group has validated
         if u.groups.all().exists():
             count_has_group += 1
@@ -24,15 +26,19 @@ def interface(request):
             count_validate += 1
     can_begin = (count_has_group == count_validate)     # we can start the simulation
 
+    if has_begun:
+        instance = Worker.objects.get(dateW=last_week)
+    else:
+        instance = None
     if request.method == 'POST':
-        f = WorkersForm(request.POST, instance=Worker.objects.get(id__exact='0'))  # changes group
+        f = WorkersForm(request.POST, instance=instance)  # changes group
         if f.is_valid():
             f.save()
             messages.success(request, 'Worker info changed')
             return redirect('/controltower')
 
     else:
-        f = WorkersForm(instance=Worker.objects.get(id__exact='0'))
+        f = WorkersForm(instance=instance)
 
     tt = Transaction.objects.all()
     oo = Order.objects.all()
@@ -175,35 +181,44 @@ def validate_all(request):
 @user_passes_test(lambda u: u.is_superuser)
 def costs(request):
 
-    all_users = User.objects.all()
-    CostFormSet = modelformset_factory(User, fields=['fixed_cost', ], extra=0)
+    weeks = Week.objects.all().order_by('week')
+    last_week = weeks.last()
+    all_infos = InfoUser.objects.filter(date=last_week)
+    CostFormSet = modelformset_factory(InfoUser, fields=['fixed_cost', ], extra=0)
 
     if request.method == 'POST':
-        f = CostFormSet(request.POST, queryset=all_users)  # change costs
+        f = CostFormSet(request.POST, queryset=all_infos)  # change costs
         if f.is_valid():
             f.save()
             messages.success(request, 'Costs changed successfully')
             return redirect('/controltower')
-    f = CostFormSet(queryset=all_users)
+    f = CostFormSet(queryset=all_infos)
     return render(request, 'controltower/costs.html', context={'f': f})
 
 
 @user_passes_test(lambda u: u.is_superuser)
 def begin_simulation(request):
 
-    # unvalidate all
+    week_1 = Week(week=1)
+    week_1.save()
+
+    # create all infos
     for user in User.objects.all():
         user.validate = False
         user.save()
+        info = InfoUser(user=user, date=week_1)
+        info.save()
 
+    # create worker
+    worker = Worker(dateW=week_1)
+    worker.save()
 
-    # create all paths
     warehouses = User.objects.filter(groups__name__exact='Warehouses')
     logistics = User.objects.filter(groups__name__exact='Logistics')
     distributors = User.objects.filter(groups__name__exact='Distributors')
 
-    week_1 = Week(week=1)
-    week_1.save()
+
+    # create all paths
     if warehouses.exists() and logistics.exists() and distributors.exists():
         for warehouse in warehouses:
             for distributor in distributors:
@@ -225,6 +240,17 @@ def new_week(request):
     new_week = Week(week=last_week.week + 1)
     new_week.save()
     v_transactions = Transaction.objects.filter(dateT=last_week, verifiedT=True)
+
+    # create new worker
+    worker = Worker.objects.get(dateW=last_week)
+    new_worker = Worker(dateW=new_week, eff=worker.eff, sal=worker.sal)
+    new_worker.save()
+
+    # create new info_user
+    infos = InfoUser.objects.filter(date=last_week)
+    for info in infos:
+        new_info = InfoUser(user=info.user, funds=info.funds, numT=info.numT, fixed_cost=info.fixed_cost, date=new_week)
+        new_info.save()
 
     # create new stocks
     stocks = Stock.objects.filter(dateS=last_week)
@@ -253,9 +279,10 @@ def new_week(request):
             new_stock_buyer.save()
 
             # new funds for buyer
-            new_funds = tran.buyerT.funds - tran.quanT * tran.priceT
-            tran.buyerT.funds = new_funds
-            tran.buyerT.save()
+            info = InfoUser.objects.get(user=tran.buyerT, date=new_week)
+            new_funds = info.funds - tran.quanT * tran.priceT
+            info.funds = new_funds
+            info.save()
 
         if tran.sellerT.codename != 'A':
             # new stock for seller
@@ -266,9 +293,10 @@ def new_week(request):
             new_stock_seller.save()
 
             # new funds for seller
-            new_funds = tran.sellerT.funds + tran.quanT * tran.priceT
-            tran.sellerT.funds = new_funds
-            tran.sellerT.save()
+            info = InfoUser.objects.get(user=tran.sellerT, date=new_week)
+            new_funds = info.funds + tran.quanT * tran.priceT
+            info.funds = new_funds
+            info.save()
 
     # goods transformations
     suppliers_a = User.objects.filter(groups__name__exact='Suppliers_A')
@@ -279,8 +307,9 @@ def new_week(request):
         stock_raw_3 = Stock.objects.get(goods__idG__exact='R3', idU__exact=user, dateS=new_week)
         stock_product_1 = Stock.objects.get(goods__idG__exact='P1', idU__exact=user, dateS=new_week)
         stock_product_3 = Stock.objects.get(goods__idG__exact='P3', idU__exact=user, dateS=new_week)
-        worker = Worker.objects.get(id__exact='0')
-        capa = user.maxT + user.numT * worker.eff
+        worker = Worker.objects.get(dateW=new_week)
+        info = InfoUser.objects.get(user=user, date=new_week)
+        capa = user.maxT + info.numT * worker.eff
 
         # good 1
         c = stock_raw_1.goods.coefG
@@ -309,8 +338,9 @@ def new_week(request):
         stock_raw_4 = Stock.objects.get(goods__idG__exact='R4', idU__exact=user, dateS=new_week)
         stock_product_2 = Stock.objects.get(goods__idG__exact='P2', idU__exact=user, dateS=new_week)
         stock_product_4 = Stock.objects.get(goods__idG__exact='P4', idU__exact=user, dateS=new_week)
-        worker = Worker.objects.get(id__exact='0')
-        capa = user.maxT + user.numT * worker.eff
+        worker = Worker.objects.get(dateW=new_week)
+        info = InfoUser.objects.get(user=user, date=new_week)
+        capa = user.maxT + info.numT * worker.eff
 
         # good 2
         c = stock_raw_2.goods.coefG
@@ -341,8 +371,9 @@ def new_week(request):
         stock_product_4 = Stock.objects.get(goods__idG__exact='P4', idU__exact=user, dateS=new_week)
         stock_final_1 = Stock.objects.get(goods__idG__exact='F1', idU__exact=user, dateS=new_week)
         stock_final_2 = Stock.objects.get(goods__idG__exact='F2', idU__exact=user, dateS=new_week)
-        worker = Worker.objects.get(id__exact='0')
-        capa = user.maxT + user.numT * worker.eff
+        worker = Worker.objects.get(dateW=new_week)
+        info = InfoUser.objects.get(user=user, date=new_week)
+        capa = user.maxT + info.numT * worker.eff
 
         # product 1
         c1 = stock_product_1.goods.coefG
@@ -377,11 +408,12 @@ def new_week(request):
         stock_product_4.save()
 
     for user in User.objects.all():
-        new_funds = user.funds - user.fixed_cost
-        user.funds = new_funds
+        info = InfoUser.objects.get(user=user, date=new_week)
+        new_funds = info.funds - info.fixed_cost
+        new = new_funds - info.numT * Worker.objects.get(dateW=new_week.week).sal
+        info.funds = new
+        info.save()
         user.validate = False
-        new = user.funds - user.numT * Worker.objects.get(id__exact='0').sal
-        user.funds = new
         user.save()
 
 

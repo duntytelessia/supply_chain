@@ -92,6 +92,7 @@
     </table>
 
 </p>
+{% if has_begun %}
 ------------------------Worker------------------------
     <form method="post" >
          {% csrf_token %}
@@ -105,7 +106,7 @@
     </form>
 
 <h4> <a href="costs"> Change fixed costs </a></h4>
-
+{% endif %}
 {% if can_begin %}  <!-- if everyone has validated -->
 <form action='valid' method='GET'>
 <button type='submit'> Begin </button>
