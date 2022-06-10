@@ -79,4 +79,5 @@ class Path(models.Model):
     logicP = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='path_logic', default=1)
     priceP = models.FloatField(default=0)  # keep
     chosenP = models.BooleanField(default=False)
+    dateP = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
 

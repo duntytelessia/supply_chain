@@ -201,19 +201,20 @@ def begin_simulation(request):
     warehouses = User.objects.filter(groups__name__exact='Warehouses')
     logistics = User.objects.filter(groups__name__exact='Logistics')
     distributors = User.objects.filter(groups__name__exact='Distributors')
+
+    week_1 = Week(week=1)
+    week_1.save()
     if warehouses.exists() and logistics.exists() and distributors.exists():
         for warehouse in warehouses:
             for distributor in distributors:
                 for logistic in logistics:
-                    id = warehouse.codename + distributor.codename + logistic.codename
+                    id = warehouse.codename + distributor.codename + logistic.codename + str(week_1.week)
                     path = Path(idP=id,
                                 sellerP=warehouse,
                                 buyerP=distributor,
-                                logicP=logistic)
+                                logicP=logistic,
+                                dateP=week_1)
                     path.save()
-
-    week_1 = Week(week=1)
-    week_1.save()
     return render(request, 'controltower/begin_simulation.html')
 
 
@@ -231,6 +232,14 @@ def new_week(request):
         id = stock.idU.codename + stock.goods.idG + str(new_week.week)
         new_stock_buyer = Stock(idS=id, idU=stock.idU, goods=stock.goods, dateS=new_week, quanS=stock.quanS)
         new_stock_buyer.save()
+
+    # create new paths
+    paths = Path.objects.filter(dateP=last_week)
+    for path in paths:
+        id = path.sellerP.codename + path.buyerP.codename + path.logicP.codename + str(new_week.week)
+        new_path = Path(idP=id, sellerP=path.sellerP, buyerP=path.buyerP, logicP=path.logicP,
+                        priceP=path.priceP, chosenP=path.chosenP, dateP=new_week)
+        new_path.save()
 
     # all changed linked to transactions
     for tran in v_transactions:

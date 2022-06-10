@@ -193,7 +193,7 @@ def actorL(request, week, username):
         for seller in seller_sales:
             for buyer in buyer_sales:
                 #paths
-                id_p = seller.codename + buyer.codename + user.codename
+                id_p = seller.codename + buyer.codename + user.codename + str(week.week)
                 path = Path.objects.get(idP=id_p)
                 dict_info_paths.update({seller.codename + buyer.codename: path})
                 ids_paths.append(id_p)
@@ -497,7 +497,7 @@ def actor(request, week, username):
         for buyer in buyer_sales:
             initialized = False
             for logic in logistics:
-                id = seller_sales.codename + buyer.codename + logic.codename
+                id = seller_sales.codename + buyer.codename + logic.codename + str(week.week)
                 path = Path.objects.get(idP__exact=id)
                 dict_info_path.update({buyer.codename + logic.codename: path})
                 if path.chosenP:
@@ -616,8 +616,8 @@ def actor(request, week, username):
                 for form in formset_logic.forms:
                     buyer = User.objects.get(codename__exact=keys_path[i])
                     logic = form.cleaned_data['chose']
-                    path = Path.objects.get(sellerP=seller_sales, buyerP=buyer, logicP=logic)
-                    all_paths = Path.objects.filter(sellerP=seller_sales, buyerP=buyer)
+                    path = Path.objects.get(sellerP=seller_sales, buyerP=buyer, logicP=logic, dateP=week)
+                    all_paths = Path.objects.filter(sellerP=seller_sales, buyerP=buyer, dateP=week)
                     all_other = all_paths.exclude(idP=path.idP)
                     path.chosenP = True
                     path.save()
