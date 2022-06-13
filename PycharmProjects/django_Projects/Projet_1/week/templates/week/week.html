@@ -7,7 +7,11 @@
 <ul>
 {% for week in weeks %}
     {% if user.is_superuser %}
-        <li> <a href="{{week.week}}/controltower/modify"> week {{week.week}}  </a> </li>
+        {% if week == last_week %}
+            <li> <a href="{{week.week}}/controltower/modify"> week {{week.week}}  </a> </li>
+        {% else %}
+            <li> <a href="{{week.week}}/controltower/view"> week {{week.week}}  </a> </li>
+        {% endif %}
     {% else %}
     <li> <a href="notallowed"> week {{week.week}}  </a> </li>
     {% endif %}

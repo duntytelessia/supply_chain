@@ -25,12 +25,27 @@ def week(request):
     context = {
         'weeks': weeks,
         'has_group': has_group,
+        'last_week': last_week,
     }
     if request.user.is_superuser:
         return render(request, 'week/week.html', context=context)
     else:
         return redirect('/week/'+str(last_week.week)+'/'+request.user.username)
 
+@user_passes_test(lambda u: u.is_superuser)
+def view_as_controltower(request, week):
+
+    week = Week.objects.get(week__exact=week)
+    transactions = Transaction.objects.filter(dateT=week)
+    orders = Order.objects.filter(dateO=week)
+
+    context = {
+        'week': week,
+        'transactions': transactions,
+        'orders': orders
+    }
+
+    return render(request, 'week/view_as_controltower.html', context=context)
 
 @user_passes_test(lambda u: u.is_superuser)
 def modify_as_controltower(request, week):
@@ -319,9 +334,8 @@ def actor(request, week, username):
 
     quan = Transaction.objects.filter(sellerT__exact=userr).aggregate(Sum('quanT'))
     quann = quan.get('quanT__sum')
-    if quann == None:
+    if quann is None:
         quann = 0
-
 
     # get logistics out of this page
     if group.name == 'Logistics':
@@ -376,6 +390,7 @@ def actor(request, week, username):
     ids_stock, ids_buy, ids_order, ids_sales = [], [], [], []
     keys_stock, keys_buy, keys_order, keys_sales, keys_path = [], [], [], [], []
     dict_stock, dict_buy, dict_order, dict_sales, dict_path = {}, {}, {}, {}, {}
+    dict_info_stock = {}
     dict_info_buy = {}
     dict_info_sales = {}
     dict_info_transport = {}
@@ -400,6 +415,15 @@ def actor(request, week, username):
             stc = Stock.objects.get(idS__exact=id)
         else:
             stc = Stock(idS=id, goods=good, idU=user, dateS=week)
+
+        # expiration system
+        expiration_week = week.week - good.durG
+        expiration_id = user.codename + good.idG + str(expiration_week)
+        if Stock.objects.filter(idS__exact=expiration_id).exists():
+            expiration_stock = Stock.objects.get(idS__exact=expiration_id)
+            dict_info_stock.update({good.idG: expiration_stock})
+        else:
+            dict_info_stock.update({good.idG: None})
         stc.save()
         ids_stock.append(id)
         keys_stock.append(good.idG)
@@ -569,6 +593,9 @@ def actor(request, week, username):
             formset_stock = StockFormSet(request.POST, queryset=Stock.objects.filter(idS__in=ids_stock))
             if formset_stock.is_valid():
                 formset_stock.save()
+                for form in formset_stock:
+                    form.instance.partialS = form.cleaned_data['quanS']
+                    form.instance.save()
                 messages.success(request, 'Stock edited')
                 return HttpResponseRedirect(request.path_info)
         if group.name == "Factories":
@@ -695,6 +722,7 @@ def actor(request, week, username):
         'dict_order': dict_order,
         'dict_sales': dict_sales,
         'dict_path': dict_path,
+        'dict_info_stock': dict_info_stock,
         'dict_info_buy': dict_info_buy,
         'dict_info_sales': dict_info_sales,
         'dict_info_transport': dict_info_transport,

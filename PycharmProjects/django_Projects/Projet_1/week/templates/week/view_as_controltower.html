@@ -1,0 +1,51 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block content %}
+<h1> Control Tower Interface</h1>
+<h2> Week {{ week }} </h2>
+
+------------------------Order------------------------
+    <table>
+        <tr>
+            <td>  id  </td>
+            <td>  seller  </td>
+            <td>  buyer  </td>
+            <td>  goods  </td>
+            <td>  quan  </td>
+        {% for o in orders %}
+        </tr>
+        <tr>
+            <td> {{ o.idO }} </td>
+            <td> {{ o.sellerO }} </td>
+            <td> {{ o.buyerO }} </td>
+            <td> {{ o.goods }} </td>
+            <td> {{ o.quanO }} </td>
+        </tr>
+    {% endfor %}
+    </table>
+
+</p>
+------------------------Transaction------------------------
+    <table>
+        <tr>
+            <td>  id  </td>
+            <td>  seller  </td>
+            <td>  buyer  </td>
+            <td>  goods  </td>
+            <td>  quan  </td>
+            <td>  price  </td>
+            <td>  verified  </td>
+        {% for t in transactions %}
+        </tr>
+        <tr>
+            <td> {{ t.idT }} </td>
+            <td> {{ t.sellerT }} </td>
+            <td> {{ t.buyerT }} </td>
+            <td> {{ t.goods }} </td>
+            <td> {{ t.quanT }} </td>
+            <td> {{ t.priceT }} </td>
+            <td> {{ t.verifiedT }} </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

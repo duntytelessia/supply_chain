@@ -235,6 +235,20 @@ def begin_simulation(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def new_week(request):
+
+    def change_partial_stock(quan, idU, goods):
+        while quan > 0:
+            non_empty_stocks = Stock.objects.filter(idU=idU, goods=goods).\
+                exclude(partialS=0).order_by('dateS')
+            first_stock = non_empty_stocks.first()
+            if quan < first_stock.partialS:
+                first_stock.partialS -= quan
+                quan = 0
+            else:
+                quan -= first_stock.partialS
+                first_stock.partialS = 0
+            first_stock.save()
+
     weeks = Week.objects.all().order_by('week')
     last_week = weeks.last()
     new_week = Week(week=last_week.week + 1)
@@ -275,7 +289,9 @@ def new_week(request):
             stock_buyer = Stock.objects.get(idU=tran.buyerT, goods=tran.goods, dateS=last_week)
             new_quanS = stock_buyer.quanS + tran.quanT
             id = stock_buyer.idU.codename + stock_buyer.goods.idG + str(new_week.week)
-            new_stock_buyer = Stock(idS=id, idU=stock_buyer.idU, goods=stock_buyer.goods, dateS=new_week, quanS=new_quanS)
+            new_stock_buyer = Stock(idS=id, idU=stock_buyer.idU, goods=stock_buyer.goods,
+                                    dateS=new_week, quanS=new_quanS)
+            new_stock_buyer.partialS += tran.quanT
             new_stock_buyer.save()
 
             # new funds for buyer
@@ -291,6 +307,9 @@ def new_week(request):
             id = stock_seller.idU.codename + stock_seller.goods.idG + str(new_week.week)
             new_stock_seller = Stock(idS=id, idU=stock_seller.idU, goods=stock_seller.goods, dateS=new_week, quanS=new_quanS)
             new_stock_seller.save()
+
+            quan = tran.quanT
+            change_partial_stock(quan, tran.sellerT, tran.goods)
 
             # new funds for seller
             info = InfoUser.objects.get(user=tran.sellerT, date=new_week)
@@ -314,24 +333,34 @@ def new_week(request):
         # good 1
         c = stock_raw_1.goods.coefG
         if stock_raw_1.quanS * c > capa:
+            quan = capa * c
             stock_product_1.quanS = stock_product_1.quanS + capa
             stock_raw_1.quanS = stock_raw_1.quanS - capa * c
+
         else:
+            quan = (stock_raw_1.quanS // c) * c
             stock_product_1.quanS = stock_product_1.quanS + stock_raw_1.quanS // c
             stock_raw_1.quanS = stock_raw_1.quanS % c
+
+        stock_product_1.partialS += quan
         stock_raw_1.save()
         stock_product_1.save()
+        change_partial_stock(quan, user, stock_raw_1.goods)
 
         # good 3
         c = stock_raw_3.goods.coefG
         if stock_raw_3.quanS * c > capa:
+            quan = capa * c
             stock_product_3.quanS = stock_product_3.quanS + capa
             stock_raw_3.quanS = stock_raw_3.quanS - capa * c
         else:
+            quan = (stock_raw_3.quanS // c) * c
             stock_product_3.quanS = stock_product_3.quanS + stock_raw_3.quanS // c
             stock_raw_3.quanS = stock_raw_3.quanS % c
+        stock_product_3.partialS += quan
         stock_raw_3.save()
         stock_product_3.save()
+        change_partial_stock(quan, user, stock_raw_3.goods)
 
     for user in suppliers_b:
         stock_raw_2 = Stock.objects.get(goods__idG__exact='R2', idU__exact=user, dateS=new_week)
@@ -345,24 +374,32 @@ def new_week(request):
         # good 2
         c = stock_raw_2.goods.coefG
         if stock_raw_2.quanS * c > capa:
+            quan = capa * c
             stock_product_2.quanS = stock_product_2.quanS + capa
             stock_raw_2.quanS = stock_raw_2.quanS - capa * c
         else:
+            quan = (stock_raw_2.quanS // c) * c
             stock_product_2.quanS = stock_product_2.quanS + stock_raw_2.quanS // c
             stock_raw_2.quanS = stock_raw_2.quanS % c
+        stock_product_2.partialS += quan
         stock_raw_2.save()
         stock_product_2.save()
+        change_partial_stock(quan, user, stock_raw_2.goods)
 
         # good 4
         c = stock_raw_4.goods.coefG
         if stock_raw_4.quanS * c > capa:
+            quan = capa * c
             stock_product_4.quanS = stock_product_4.quanS + capa
             stock_raw_4.quanS = stock_raw_4.quanS - capa * c
         else:
+            quan = ( stock_raw_4.quanS // c) * c
             stock_product_4.quanS = stock_product_4.quanS + stock_raw_4.quanS // c
             stock_raw_4.quanS = stock_raw_4.quanS % c
+        stock_product_4.partialS += quan
         stock_raw_4.save()
         stock_product_4.save()
+        change_partial_stock(quan, user, stock_raw_4.goods)
 
     for user in factories:
         stock_product_1 = Stock.objects.get(goods__idG__exact='P1', idU__exact=user, dateS=new_week)
@@ -378,34 +415,50 @@ def new_week(request):
         # product 1
         c1 = stock_product_1.goods.coefG
         c2 = stock_product_2.goods.coefG
-        if stock_product_1.quanS * c1 > capa and stock_product_2.quanS * c2 > capa:
+        if stock_product_1.quanS * c1 > capa or stock_product_2.quanS * c2 > capa:
+            quan = capa
+            quan1 = capa * c1
+            quan2 = capa * c2
             stock_final_1.quanS = stock_final_1.quanS + capa
             stock_product_1.quanS = stock_product_1.quanS - capa * c1
             stock_product_2.quanS = stock_product_2.quanS - capa * c2
         else:
             quan = min(stock_product_1.quanS // c1, stock_product_2.quanS // c2)
+            quan1 = quan * c1
+            quan2 = quan * c2
             stock_final_1.quanS = stock_final_1.quanS + quan
             stock_product_1.quanS = stock_product_1.quanS - quan * c1
             stock_product_2.quanS = stock_product_2.quanS - quan * c2
+        stock_final_1.partialS += quan
         stock_final_1.save()
         stock_product_1.save()
         stock_product_2.save()
+        change_partial_stock(quan1, user, stock_product_1.goods)
+        change_partial_stock(quan2, user, stock_product_2.goods)
 
         # product 2
         c1 = stock_product_3.goods.coefG
         c2 = stock_product_4.goods.coefG
-        if stock_product_3.quanS * c1 > capa and stock_product_4.quanS * c2 > capa:
+        if stock_product_3.quanS * c1 > capa or stock_product_4.quanS * c2 > capa:
+            quan = capa
+            quan1 = capa * c1
+            quan2 = capa * c2
             stock_final_2.quanS = stock_final_2.quanS + capa
             stock_product_3.quanS = stock_product_3.quanS - capa
             stock_product_4.quanS = stock_product_4.quanS - capa
         else:
             quan = min(stock_product_3.quanS // c1, stock_product_4.quanS // c2)
+            quan1 = quan * c1
+            quan2 = quan * c2
             stock_final_2.quanS = stock_final_2.quanS + quan
             stock_product_3.quanS = stock_product_3.quanS - quan * c1
             stock_product_4.quanS = stock_product_4.quanS - quan * c2
+        stock_final_2.partialS += quan
         stock_final_2.save()
         stock_product_3.save()
         stock_product_4.save()
+        change_partial_stock(quan1, user, stock_product_3.goods)
+        change_partial_stock(quan2, user, stock_product_4.goods)
 
     for user in User.objects.all():
         info = InfoUser.objects.get(user=user, date=new_week)
@@ -416,5 +469,18 @@ def new_week(request):
         user.validate = False
         user.save()
 
+    # expiration
+    goods = Goods.objects.all()
+    for good in goods:
+        expiration = new_week.week - good.durG - 1
+        if Week.objects.filter(week=expiration).exists():
+            expiration_week = Week.objects.get(week=expiration)
+            stocks = Stock.objects.filter(goods=good, dateS=expiration_week)
+            for stock in stocks:
+                total_stock = Stock.objects.get(goods=good, idU=stock.idU, dateS=new_week)
+                total_stock.quanS -= stock.partialS
+                stock.partialS = 0
+                total_stock.save()
+                stock.save()
 
     return redirect('/')

@@ -22,10 +22,15 @@
     <table>
     {% for good in goods_stock %}
         <tr>
-        {% with b=dict_stock|keyvalue:good.idG %}
-            <td> {{ good.nameG}} </td>
-            <td> {{ b.as_p }} </td>
-        {% endwith %}
+            {% with b=dict_stock|keyvalue:good.idG %}
+                <td> {{ good.nameG}} </td>
+                <td> {{ b.as_p }} </td>
+            {% endwith %}
+            {% with c=dict_info_stock|keyvalue:good.idG %}
+                {% if c is not None %}
+                <td> {{ c.partialS }} will expire next week if not used.</td>
+                {% endif %}
+            {% endwith %}
         </tr>
     {% endfor %}
     </table>

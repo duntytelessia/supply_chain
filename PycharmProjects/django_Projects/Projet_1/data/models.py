@@ -47,6 +47,7 @@ class Stock(models.Model):
     goods = models.ForeignKey(Goods, on_delete=models.CASCADE, default=2)
     idU = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default=2)
     quanS = models.FloatField(default=0)
+    partialS = models.FloatField(default=0)
     dateS = models.ForeignKey(Week, on_delete=models.CASCADE, default=1)
 
 
