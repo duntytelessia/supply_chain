@@ -669,4 +669,33 @@ def notallowed(request):
 
 
 def simulb(request, week, username):
-    return render(request, 'week/form_simulB.html')
+    #définir les variables
+    user = User.objects.get(username__exact=username)
+    group = user.groups.all().first()
+    week = Week.objects.get(week__exact=week)
+    #définir last_week
+    if week.existe():
+        last_week = week - 1
+    else:
+        last_week = 0
+    #définir future_week
+    # --- #
+
+    #définir supplier_A
+    if group.name == 'Logistics':
+        return redirect('/week/' + str(week) + '/' + user.username + '/L')
+    if group.name == 'Suppliers_A':
+        goods_buy_1_A = Goods.objects.filter(idG__in=['R1'])
+        goods_buy_2_A = Goods.objects.filter(idG__in=['R3'])
+        buyer_buy = request.user
+        goods_sales = Goods.objects.filter(idG__in=['P1', 'P3'])
+        seller_sales = request.user
+
+    #zone for context
+    if group.name == 'Suppliers_A':
+        context: {
+            'goods_buy_1_A': goods_buy_1_A,
+            'goods_buy_2_A': goods_buy_2_A
+        }
+
+    return render(request, 'week/form_simulB.html', context=context)

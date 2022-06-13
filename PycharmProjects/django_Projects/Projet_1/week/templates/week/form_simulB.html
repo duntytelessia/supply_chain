@@ -1,4 +1,4 @@
-{% extends 'week/supp_a.html' %}
+{% extends 'data/base_generic.html' %}
 {% load custom_tags %}
 {% block simulB %}
 <h2>Your are : {{ user }} ; Your position is : {{ user.groups.all.0 }} </h2>
@@ -7,7 +7,8 @@
    <h3>Last week's sales</h3>
    <table border="col-sm-10">
       <tr>
-         <td> 
+         <td>
+            {{goods_buy_1_A.nameG}}
          </td>
          <td>"Quantity 1"</td>
       </tr>
