@@ -1,0 +1,103 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block simulB %}
+<h2>Your are : {{ user }} ; Your position is : {{ user.groups.all.0 }} </h2>
+<hr style="border:1px dashed #000; height:1px;margin-right:15px">
+<div class="last-week">
+   <h3>Last week's sales</h3>
+   <table border="col-sm-10">
+      <tr>
+         <td>
+            {{goods_buy_1_A.nameG}}
+         </td>
+         <td>"Quantity 1"</td>
+      </tr>
+      <tr>
+         <td>"Stock 2" : </td>
+         <td>"Quantity 2"</td>
+      </tr>
+   </table>
+</div>
+<div class="This-week">
+   <h3>Sales for the week</h3>
+   <table border="col-sm-10">
+      <tr>
+         <td>"Stock 1"  : </td>
+         <td>"Quantity 1"</td>
+      </tr>
+      <tr>
+         <td>"Stock 2" : </td>
+         <td>"Quantity 2"</td>
+      </tr>
+   </table>
+</div>
+<div class="Next-week">
+   <h3>Expected sales next week</h3>
+   <table border="col-sm-10">
+      <tr>
+         <td>"Stock 1" : </td>
+         <td>"Quantity 1"</td>
+      </tr>
+      <tr>
+         <td>"Stock 2" : </td>
+         <td>"Quantity 2"</td>
+      </tr>
+   </table>
+</div>
+<hr style="border:1px dashed #000; height:1px;margin-right:15px">
+<div class="Recommended">
+   <h3>Recommended purchase volume</h3>
+   <table border="col-sm-10">
+      <tr>
+         <td>"Input 1" : </td>
+         <td>"Quantity 1"</td>
+      </tr>
+      <tr>
+         <td>"Input 2" : </td>
+         <td>"Quantity 2"</td>
+      </tr>
+   </table>
+</div>
+<hr style="border:1px dashed #000; height:1px;margin-right:15px">
+<div class="Recommended">
+   <h3>Recommended sold volume</h3>
+   <table border="col-sm-10">
+      <tr>
+         <td rowspan="2">"Input 1"</td>
+         <td>"Quantity to A"</td>
+      </tr>
+      <tr>
+         <td>"Quantity to B"</td>
+      </tr>
+      <tr>
+         <td rowspan="2">"Input 2"</td>
+         <td>"Quantity to A"</td>
+      </tr>
+      <tr>
+         <td>"Quantity to B"</td>
+      </tr>
+   </table>
+</div>
+<hr style="border:1px dashed #000; height:1px;margin-right:15px">
+<h3>Email from the Control Tower Manager</h3>
+<div></div>
+<textarea rows="10" cols="40" disabled>"The message from Control Tower manager"</textarea>
+<table border="col-sm-10" style="float: right;margin-right: 15px;">
+   <tr>
+      <th>Risk</th>
+      <th>Decision-making meeting</th>
+   </tr>
+   <tr>
+      <td>"Risk1"</td>
+      <td>"Solution1"</td>
+   </tr>
+   <tr>
+      <td>"Risk2"</td>
+      <td>"Solution2"</td>
+   </tr>
+   <tr>
+      <td>"Risk3"</td>
+      <td>"Solution3"</td>
+   </tr>
+</table>
+{% endblock %}
