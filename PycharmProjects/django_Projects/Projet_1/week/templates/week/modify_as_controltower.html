@@ -11,7 +11,7 @@
     {% endfor %}
 </ul>
 {% endif %}
-
+{% if not first_week %}
     <form method="post">
         {{ formset_a.management_form }}
         {{ formset_a.non_form_errors }}
@@ -77,6 +77,7 @@
         <input type="submit" name="submitB" value="Edit">
     </form>
 -----------------------------------------------------------
+{% endif %}
 <form method="post">
         {{ formset_a1.management_form }}
         {% csrf_token %}

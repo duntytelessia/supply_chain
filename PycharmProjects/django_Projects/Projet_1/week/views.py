@@ -56,6 +56,7 @@ def modify_as_controltower(request, week):
     goods_b = Goods.objects.filter(idG__in=['R2', 'R4'])
     seller = request.user
     week = Week.objects.get(week__exact=week)
+    first_week = (week.week == 1)
     list_a = []
     dict_a = {}
     keys_a = []
@@ -171,6 +172,7 @@ def modify_as_controltower(request, week):
         'dict_a1': dict_a1,
         'dict_info_a': dict_info_a,
         'dict_info_b': dict_info_b,
+        'first_week': first_week,
     }
     formlayout(formset_a, keys_a, dict_a)
     context.update({'formset_a': formset_a})
