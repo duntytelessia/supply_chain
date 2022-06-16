@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
+from django.db.models import Sum
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import user_passes_test
 from controltower.forms import GroupChangeForm, GoodChangeForm, WorkersForm
 from data.models import Goods, Week, Order, Transaction, Stock, Worker, Path, InfoUser
@@ -19,6 +20,10 @@ def interface(request):
     count_has_group, count_validate = 0, 0
     weeks = Week.objects.all().order_by('week')
     last_week = weeks.last()
+    if has_begun:
+        first_week = (last_week.week == 1)
+    else:
+        first_week = True
     for u in all_users:   # to know if each user with a group has validated
         if u.groups.all().exists():
             count_has_group += 1
@@ -40,17 +45,12 @@ def interface(request):
     else:
         f = WorkersForm(instance=instance)
 
-    tt = Transaction.objects.all()
-    oo = Order.objects.all()
-
     context = {
         'all_users': all_users,
         'can_begin': can_begin,
         'has_begun': has_begun,
         'f': f,
-        'tt': tt,
-        'oo' : oo,
-
+        'first_week': first_week,
     }
     return render(request, 'controltower/interface.html', context=context)
 
@@ -240,14 +240,17 @@ def new_week(request):
         while quan > 0:
             non_empty_stocks = Stock.objects.filter(idU=idU, goods=goods).\
                 exclude(partialS=0).order_by('dateS')
-            first_stock = non_empty_stocks.first()
-            if quan < first_stock.partialS:
-                first_stock.partialS -= quan
-                quan = 0
+            if non_empty_stocks.exists():
+                first_stock = non_empty_stocks.first()
+                if quan < first_stock.partialS:
+                    first_stock.partialS -= quan
+                    quan = 0
+                else:
+                    quan -= first_stock.partialS
+                    first_stock.partialS = 0
+                first_stock.save()
             else:
-                quan -= first_stock.partialS
-                first_stock.partialS = 0
-            first_stock.save()
+                quan = 0
 
     weeks = Week.objects.all().order_by('week')
     last_week = weeks.last()
@@ -280,42 +283,6 @@ def new_week(request):
         new_path = Path(idP=id, sellerP=path.sellerP, buyerP=path.buyerP, logicP=path.logicP,
                         priceP=path.priceP, chosenP=path.chosenP, dateP=new_week)
         new_path.save()
-
-    # all changed linked to transactions
-    for tran in v_transactions:
-
-        if tran.buyerT.codename != 'A':
-            # new stock for buyer
-            stock_buyer = Stock.objects.get(idU=tran.buyerT, goods=tran.goods, dateS=last_week)
-            new_quanS = stock_buyer.quanS + tran.quanT
-            id = stock_buyer.idU.codename + stock_buyer.goods.idG + str(new_week.week)
-            new_stock_buyer = Stock(idS=id, idU=stock_buyer.idU, goods=stock_buyer.goods,
-                                    dateS=new_week, quanS=new_quanS)
-            new_stock_buyer.partialS += tran.quanT
-            new_stock_buyer.save()
-
-            # new funds for buyer
-            info = InfoUser.objects.get(user=tran.buyerT, date=new_week)
-            new_funds = info.funds - tran.quanT * tran.priceT
-            info.funds = new_funds
-            info.save()
-
-        if tran.sellerT.codename != 'A':
-            # new stock for seller
-            stock_seller = Stock.objects.get(idU=tran.sellerT, goods=tran.goods, dateS=last_week)
-            new_quanS = stock_seller.quanS - tran.quanT
-            id = stock_seller.idU.codename + stock_seller.goods.idG + str(new_week.week)
-            new_stock_seller = Stock(idS=id, idU=stock_seller.idU, goods=stock_seller.goods, dateS=new_week, quanS=new_quanS)
-            new_stock_seller.save()
-
-            quan = tran.quanT
-            change_partial_stock(quan, tran.sellerT, tran.goods)
-
-            # new funds for seller
-            info = InfoUser.objects.get(user=tran.sellerT, date=new_week)
-            new_funds = info.funds + tran.quanT * tran.priceT
-            info.funds = new_funds
-            info.save()
 
     # goods transformations
     suppliers_a = User.objects.filter(groups__name__exact='Suppliers_A')
@@ -415,7 +382,7 @@ def new_week(request):
         # product 1
         c1 = stock_product_1.goods.coefG
         c2 = stock_product_2.goods.coefG
-        if stock_product_1.quanS * c1 > capa or stock_product_2.quanS * c2 > capa:
+        if stock_product_1.quanS * c1 > capa and stock_product_2.quanS * c2 > capa:
             quan = capa
             quan1 = capa * c1
             quan2 = capa * c2
@@ -439,7 +406,7 @@ def new_week(request):
         # product 2
         c1 = stock_product_3.goods.coefG
         c2 = stock_product_4.goods.coefG
-        if stock_product_3.quanS * c1 > capa or stock_product_4.quanS * c2 > capa:
+        if stock_product_3.quanS * c1 > capa and stock_product_4.quanS * c2 > capa:
             quan = capa
             quan1 = capa * c1
             quan2 = capa * c2
@@ -460,10 +427,61 @@ def new_week(request):
         change_partial_stock(quan1, user, stock_product_3.goods)
         change_partial_stock(quan2, user, stock_product_4.goods)
 
+    # all changed linked to transactions
+    for tran in v_transactions:
+
+        if tran.buyerT.codename != 'A':
+            # new stock for buyer
+            stock_buyer = Stock.objects.get(idU=tran.buyerT, goods=tran.goods, dateS=last_week)
+            new_quanS = stock_buyer.quanS + tran.quanT
+            id = stock_buyer.idU.codename + stock_buyer.goods.idG + str(new_week.week)
+            new_stock_buyer = Stock(idS=id, idU=stock_buyer.idU, goods=stock_buyer.goods,
+                                    dateS=new_week, quanS=new_quanS)
+            new_stock_buyer.partialS += tran.quanT
+            new_stock_buyer.save()
+
+            # new funds for buyer
+            info = InfoUser.objects.get(user=tran.buyerT, date=new_week)
+            new_funds = info.funds - tran.quanT * tran.priceT
+            info.funds = new_funds
+            info.save()
+
+        if tran.sellerT.codename != 'A':
+            # new stock for seller
+            stock_seller = Stock.objects.get(idU=tran.sellerT, goods=tran.goods, dateS=last_week)
+            new_quanS = stock_seller.quanS - tran.quanT
+            id = stock_seller.idU.codename + stock_seller.goods.idG + str(new_week.week)
+            new_stock_seller = Stock(idS=id, idU=stock_seller.idU, goods=stock_seller.goods, dateS=new_week, quanS=new_quanS)
+            new_stock_seller.save()
+
+            quan = tran.quanT
+            change_partial_stock(quan, tran.sellerT, tran.goods)
+
+            # new funds for seller
+            info = InfoUser.objects.get(user=tran.sellerT, date=new_week)
+            new_funds = info.funds + tran.quanT * tran.priceT
+            info.funds = new_funds
+            info.save()
+
+    # logistics
+    paths = Path.objects.all()
+    for path in paths:
+        if path.chosenP:
+            all_tran = Transaction.objects.filter(sellerT=path.sellerP, buyerT=path.buyerP,
+                                                  dateT=last_week, verifiedT=True)
+            info_logic = InfoUser.objects.get(user=path.logicP, date=new_week)
+            info_seller = InfoUser.objects.get(user=path.sellerP, date=new_week)
+            for tran in all_tran:
+                info_logic.funds += tran.quanT * path.priceP
+                info_seller.funds -= tran.quanT * path.priceP
+                info_logic.save()
+                info_seller.save()
+
+    # fixed costs and salaries
     for user in User.objects.all():
         info = InfoUser.objects.get(user=user, date=new_week)
         new_funds = info.funds - info.fixed_cost
-        new = new_funds - info.numT * Worker.objects.get(dateW=new_week.week).sal
+        new = new_funds - info.numT * Worker.objects.get(dateW=new_week).sal
         info.funds = new
         info.save()
         user.validate = False
@@ -482,5 +500,106 @@ def new_week(request):
                 stock.partialS = 0
                 total_stock.save()
                 stock.save()
+
+    return redirect('/')
+
+
+def kpi(request):
+
+    users = User.objects.exclude(codename='A')
+    last_week = Week.objects.all().last()
+    week = Week.objects.get(week=last_week.week - 1)
+    if Week.objects.filter(week=last_week.week - 2).exists():
+        previous_week = Week.objects.get(week=last_week.week - 2)
+    else:
+        previous_week = None
+    paths = Path.objects.all()
+    worker = Worker.objects.get(dateW=week)
+    dict_kpi = {}
+
+    for user in users:
+
+        # KPI1
+        if user.groups.first().name != 'Logistics':
+            sum_order = Order.objects.filter(sellerO=user, dateO=previous_week).aggregate(Sum('quanO'))
+            sum_tran = Transaction.objects.filter(sellerT=user, dateT=week, verifiedT=True).aggregate(Sum('quanT'))
+            if sum_order['quanO__sum'] == 0:
+                dict_kpi.update({user.codename + 'KPI1': '#DIV0'})
+            elif sum_order['quanO__sum'] is None or sum_tran['quanT__sum'] is None:
+                dict_kpi.update({user.codename + 'KPI1': 'NONE'})
+            else:
+                dict_kpi.update({user.codename + 'KPI1': sum_tran['quanT__sum'] / sum_order['quanO__sum']})
+        else:
+            dict_kpi.update({user.codename + 'KPI1': 'L'})
+
+        # KPI2
+        if user.groups.first().name != 'Logistics':
+            sum_tran = Transaction.objects.filter(sellerT=user, dateT=week, verifiedT=True).aggregate(Sum('quanT'))
+            stock = Stock.objects.filter(idU=user, dateS=week).aggregate(Sum('quanS'))
+            if stock['quanS__sum'] == 0:
+                dict_kpi.update({user.codename + 'KPI2': '#DIV0'})
+            elif sum_tran['quanT__sum'] is None or stock['quanS__sum'] is None:
+                dict_kpi.update({user.codename + 'KPI2': 'NONE'})
+            else:
+                dict_kpi.update({user.codename + 'KPI2': sum_tran['quanT__sum'] / stock['quanS__sum']})
+        else:
+            dict_kpi.update({user.codename + 'KPI2': 'L'})
+
+        # KPI3
+        info_user = InfoUser.objects.get(user=user, date=week)
+        sum_costs = info_user.fixed_cost
+        sum_costs += info_user.numT * worker.sal
+        sum_profits = 0
+        if user.groups.first().name != 'Logistics':
+            tran_buy = Transaction.objects.filter(buyerT=user, dateT=week, verifiedT=True)
+            for tran in tran_buy:
+                sum_costs += tran.quanT * tran.priceT
+
+            tran_sale = Transaction.objects.filter(sellerT=user, dateT=week, verifiedT=True)
+            for tran in tran_sale:
+                sum_profits += tran.quanT * tran.priceT
+        else:
+            for path in paths:
+                if path.chosenP:
+                    all_tran = Transaction.objects.filter(sellerT=path.sellerP, buyerT=path.buyerP,
+                                                          dateT=week, verifiedT=True)
+                    for tran in all_tran:
+                        sum_profits += tran.quanT * path.priceP
+        if user.groups.first().name == 'Warehouses':
+            user_paths = Path.objects.filter(sellerP=user)
+            for path in user_paths:
+                if path.chosenP:
+                    all_tran = Transaction.objects.filter(sellerT=path.sellerP, buyerT=path.buyerP,
+                                                          dateT=week, verifiedT=True)
+                    for tran in all_tran:
+                        sum_costs += tran.quanT * path.priceP
+        if sum_costs == 0:
+            dict_kpi.update({user.codename + 'KPI3': '#DIV0'})
+        else:
+            dict_kpi.update({user.codename + 'KPI3': sum_profits / sum_costs})
+
+    context = {
+        'users': users,
+        'week': week,
+        'dict_kpi': dict_kpi,
+    }
+    return render(request, 'controltower/kpi.html', context=context)
+
+@user_passes_test(lambda u: u.is_superuser)
+def confirmation(request):
+    return render(request, 'controltower/confirmation.html')
+
+@user_passes_test(lambda u: u.is_superuser)
+def delete(request):
+    User.objects.all().delete()
+    Group.objects.all().delete()
+    Week.objects.all().delete()
+    InfoUser.objects.all().delete()
+    Goods.objects.all().delete()
+    Stock.objects.all().delete()
+    Order.objects.all().delete()
+    Transaction.objects.all().delete()
+    Worker.objects.all().delete()
+    Path.objects.all().delete()
 
     return redirect('/')

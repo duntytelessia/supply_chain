@@ -1,0 +1,11 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block content %}
+
+<h1> /!\ WARNING /!\ </h1>
+Doing so will delete all users, including the admin, and erase all data saved. <br>
+Are you sure you want to continue ?
+
+<h2> <a href="/controltower/delete"> Yes !! </a></h2>
+
+{% endblock %}

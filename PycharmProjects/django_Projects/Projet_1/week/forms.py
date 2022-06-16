@@ -89,6 +89,22 @@ class BaseSalesFormset(BaseModelFormSet):
         return cleaned_data
 
 
+class BaseSalesAFormset(BaseModelFormSet):
+
+    def clean(self):
+        cleaned_data = super(BaseSalesAFormset, self).clean()
+        if any(self.errors):
+            return
+
+        for form in self.forms:
+            tran = form.instance
+            last_week = Week.objects.get(week=tran.dateT.week - 1)
+            order = Order.objects.get(sellerO=tran.sellerT, buyerO=tran.buyerT, goods=tran.goods, dateO=last_week)
+            if tran.quanT > order.quanO:
+                raise ValidationError(str(tran.buyerT.codename) + ' ' + str(tran.goods.nameG) +
+                                      ': Transaction is greater than order')
+
+
 class BaseSalesLFormset(BaseModelFormSet):
 
     def __init__(self, user, week, *args, **kwargs):
@@ -105,15 +121,30 @@ class BaseSalesLFormset(BaseModelFormSet):
         info = InfoUser.objects.get(user=self.user, date=self.week)
         capa = self.user.maxT + info.numT * worker.eff
         total = 0
+        by_gu = dict()
         for form in self.forms:
             tran = form.instance
             total += tran.quanT
 
             id_o = tran.idT[:-1] + str(tran.dateT.week - 1)
+            id_s = tran.sellerT.codename + tran.goods.idG + str(self.week.week)
             order = Order.objects.get(idO__exact=id_o)
+            stock = Stock.objects.get(idS__exact=id_s)
             if tran.quanT > order.quanO:
                 raise ValidationError(str(tran.sellerT) + ' to ' + str(tran.buyerT) + ': '
                                       + str(tran.goods) + '     Transaction is greater than order')
+            if tran.goods.idG + tran.sellerT.codename in by_gu.keys():
+                by_gu[tran.goods.idG + tran.sellerT.codename].append(tran)
+            else:
+                by_gu.update({tran.goods.idG + tran.sellerT.codename: [tran, ]})
+
+        for code in by_gu.keys():
+            total_g = 0
+            for tran in by_gu[code]:
+                stock = Stock.objects.get(idU=tran.sellerT, goods=tran.goods, dateS=tran.dateT)
+                total_g += tran.quanT
+            if total_g > stock.quanS:
+                raise ValidationError(code + ': total of transactions is greater than stock')
 
         if total > capa:
             raise ValidationError('The transactions are greater than the max capacity')

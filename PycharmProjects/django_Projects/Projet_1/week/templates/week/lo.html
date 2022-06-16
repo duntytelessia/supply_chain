@@ -82,6 +82,10 @@
                             {% with order=dict_info_sales|keyvalue:a %}
                                 Order: {{order.quanO}}
                             {% endwith %}
+                    <br>
+                            {% with stock=dict_info_stock|keyvalue:a %}
+                                Seller Stock: {{stock.quanS}}
+                            {% endwith %}
                             {% with d=dict_sales|keyvalue:a %}
                                 {{ d.as_p }}
                             {% endwith %}
