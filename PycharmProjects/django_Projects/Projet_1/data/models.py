@@ -34,6 +34,8 @@ class Goods(models.Model):
     nameG = models.CharField(max_length=200)
     durG = models.PositiveIntegerField()  # keep
     coefG = models.FloatField(default=1)  # it needs n good to transform in 1 other good.
+    minG = models.FloatField(default=0)
+    maxG = models.FloatField(default=50)
 
     def __str__(self):
         return self.nameG
