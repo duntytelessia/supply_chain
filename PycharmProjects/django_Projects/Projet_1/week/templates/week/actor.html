@@ -39,12 +39,8 @@
     {% endif %}
 </form>
 --------------------------------------------------------------------------
-
-<h3> Buy </h3>
+<h3> Last Week Transactions </h3>
 {% if fact %}
-<form method="post">
-        {{ formset_buy_1.management_form }}
-        {% csrf_token %}
         <table>
             <tr>
                 <td> </td>
@@ -63,22 +59,11 @@
                             Price : {{ tran_1.priceT }}
                         {% endwith %}
                     {% endwith %}
-                    {% with a=user.codename|add:good.idG %}
-                        {% with b=dict_buy_1|keyvalue:a %}
-                            {{ b.as_p }}
-                        {% endwith %}
-                     {% endwith %}
                 </td>
                 {% endfor %}
             </tr>
             {% endfor %}
         </table>
-
-        <input type="submit" name="submitB_1" value="Edit">
-    </form>
-<form method="post">
-        {{ formset_buy_2.management_form }}
-        {% csrf_token %}
         <table>
             <tr>
                 <td> </td>
@@ -97,24 +82,13 @@
                             Price : {{ tran_2.priceT }}
                         {% endwith %}
                     {% endwith %}
-                    {% with a=user.codename|add:good.idG %}
-                        {% with b=dict_buy_2|keyvalue:a %}
-                            {{ b.as_p }}
-                        {% endwith %}
-                     {% endwith %}
                 </td>
                 {% endfor %}
             </tr>
             {% endfor %}
         </table>
 
-        <input type="submit" name="submitB_2" value="Edit">
-    </form>
-
 {% else %}
-<form method="post">
-        {{ formset_buy.management_form }}
-        {% csrf_token %}
         <table>
             <tr>
                 <td> </td>
@@ -133,19 +107,11 @@
                             Price : {{ tran.priceT }}
                         {% endwith %}
                     {% endwith %}
-                    {% with a=user.codename|add:good.idG %}
-                        {% with b=dict_buy|keyvalue:a %}
-                            {{ b.as_p }}
-                        {% endwith %}
-                     {% endwith %}
                 </td>
                 {% endfor %}
             </tr>
             {% endfor %}
         </table>
-
-        <input type="submit" name="submitB" value="Edit">
-    </form>
 {% endif %}
 --------------------------------------------------------------------------
 {% if fact %}

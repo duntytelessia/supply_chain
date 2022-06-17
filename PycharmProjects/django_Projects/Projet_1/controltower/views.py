@@ -250,7 +250,7 @@ def new_week(request):
                     first_stock.partialS = 0
                 first_stock.save()
             else:
-                quan = 0
+                quan = 0 # should never happen
 
     weeks = Week.objects.all().order_by('week')
     last_week = weeks.last()
@@ -303,13 +303,14 @@ def new_week(request):
             quan = capa * c
             stock_product_1.quanS = stock_product_1.quanS + capa
             stock_raw_1.quanS = stock_raw_1.quanS - capa * c
+            stock_product_1.partialS += capa
 
         else:
             quan = (stock_raw_1.quanS // c) * c
             stock_product_1.quanS = stock_product_1.quanS + stock_raw_1.quanS // c
             stock_raw_1.quanS = stock_raw_1.quanS - quan
+            stock_product_1.partialS += stock_raw_1.quanS // c
 
-        stock_product_1.partialS += quan
         stock_raw_1.save()
         stock_product_1.save()
         change_partial_stock(quan, user, stock_raw_1.goods)
@@ -320,11 +321,13 @@ def new_week(request):
             quan = capa * c
             stock_product_3.quanS = stock_product_3.quanS + capa
             stock_raw_3.quanS = stock_raw_3.quanS - capa * c
+            stock_product_3.partialS += capa
+
         else:
             quan = (stock_raw_3.quanS // c) * c
             stock_product_3.quanS = stock_product_3.quanS + stock_raw_3.quanS // c
             stock_raw_3.quanS = stock_raw_3.quanS - quan
-        stock_product_3.partialS += quan
+            stock_product_3.partialS += stock_raw_3.quanS // c
         stock_raw_3.save()
         stock_product_3.save()
         change_partial_stock(quan, user, stock_raw_3.goods)
@@ -344,11 +347,12 @@ def new_week(request):
             quan = capa * c
             stock_product_2.quanS = stock_product_2.quanS + capa
             stock_raw_2.quanS = stock_raw_2.quanS - capa * c
+            stock_product_2.partialS += capa
         else:
             quan = (stock_raw_2.quanS // c) * c
             stock_product_2.quanS = stock_product_2.quanS + stock_raw_2.quanS // c
             stock_raw_2.quanS = stock_raw_2.quanS - quan
-        stock_product_2.partialS += quan
+            stock_product_2.partialS += stock_raw_2.quanS // c
         stock_raw_2.save()
         stock_product_2.save()
         change_partial_stock(quan, user, stock_raw_2.goods)
@@ -359,11 +363,12 @@ def new_week(request):
             quan = capa * c
             stock_product_4.quanS = stock_product_4.quanS + capa
             stock_raw_4.quanS = stock_raw_4.quanS - capa * c
+            stock_product_4.partialS += capa
         else:
             quan = ( stock_raw_4.quanS // c) * c
             stock_product_4.quanS = stock_product_4.quanS + stock_raw_4.quanS // c
             stock_raw_4.quanS = stock_raw_4.quanS - quan
-        stock_product_4.partialS += quan
+            stock_product_4.partialS += stock_raw_4.quanS // c
         stock_raw_4.save()
         stock_product_4.save()
         change_partial_stock(quan, user, stock_raw_4.goods)
@@ -433,12 +438,9 @@ def new_week(request):
         if tran.buyerT.codename != 'A':
             # new stock for buyer
             stock_buyer = Stock.objects.get(idU=tran.buyerT, goods=tran.goods, dateS=new_week)
-            new_quanS = stock_buyer.quanS + tran.quanT
-            id = stock_buyer.idU.codename + stock_buyer.goods.idG + str(new_week.week)
-            new_stock_buyer = Stock(idS=id, idU=stock_buyer.idU, goods=stock_buyer.goods,
-                                    dateS=new_week, quanS=new_quanS)
-            new_stock_buyer.partialS += tran.quanT
-            new_stock_buyer.save()
+            stock_buyer.quanS += tran.quanT
+            stock_buyer.partialS += tran.quanT
+            stock_buyer.save()
 
             # new funds for buyer
             info = InfoUser.objects.get(user=tran.buyerT, date=new_week)
@@ -449,11 +451,8 @@ def new_week(request):
         if tran.sellerT.codename != 'A':
             # new stock for seller
             stock_seller = Stock.objects.get(idU=tran.sellerT, goods=tran.goods, dateS=new_week)
-            new_quanS = stock_seller.quanS - tran.quanT
-            id = stock_seller.idU.codename + stock_seller.goods.idG + str(new_week.week)
-            new_stock_seller = Stock(idS=id, idU=stock_seller.idU, goods=stock_seller.goods, dateS=new_week, quanS=new_quanS)
-            new_stock_seller.save()
-
+            stock_seller.quanS -= tran.quanT
+            stock_seller.save()
             quan = tran.quanT
             change_partial_stock(quan, tran.sellerT, tran.goods)
 
