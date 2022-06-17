@@ -31,7 +31,7 @@ class GoodChangeForm_1(UserChangeForm):
 
     class Meta:
         model = Goods
-        fields = ('nameG', 'durG', 'coefG')
+        fields = ('nameG', 'durG', 'coefG', 'minG', 'maxG')
 
     def clean(self):
         cleaned_data = super(GoodChangeForm_1, self).clean()

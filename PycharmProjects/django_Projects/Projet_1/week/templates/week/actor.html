@@ -222,6 +222,7 @@
                 <td>
                     {% with a=user.codename|add:good.idG %}
                         {% with order=dict_info_sales|keyvalue:a %}
+                            Price: {{good.minG}} - {{good.maxG}}
                             Order: {{order.quanO}}
                         {% endwith %}
                     {% endwith %}

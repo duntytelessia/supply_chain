@@ -29,6 +29,7 @@
                 {% for good in goods_a %}
                 <td> {% with a=user.codename|add:good.idG %}
                         {% with b=dict_info_a|keyvalue:a %}
+                            Price: {{good.minG}} - {{good.maxG}}
                             Order: {{ b.quanO }}
                         {% endwith %}
                         {% with b=dict_a|keyvalue:a %}

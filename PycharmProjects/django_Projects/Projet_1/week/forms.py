@@ -3,7 +3,7 @@ from django.forms import ModelForm, BaseModelFormSet, BaseFormSet
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserChangeForm
-from data.models import CustomUser, Stock, Order, Week, Transaction, Worker, InfoUser
+from data.models import CustomUser, Stock, Order, Week, Transaction, Worker, InfoUser, Goods
 
 User = get_user_model()
 
@@ -73,6 +73,16 @@ class BaseSalesFormset(BaseModelFormSet):
             if total > stock.quanS:
                 raise ValidationError(str(good.nameG) + ': total of transactions is greater than stock')
 
+        for good in by_goods.keys():
+            for tran in by_goods[good]:
+                goo = Goods.objects.get(nameG=tran.goods)
+            if tran.priceT < goo.minG:
+                raise ValidationError(str(tran.buyerT.codename) + ' ' + str(tran.goods.nameG) +
+                                      ': Transaction Price is lower than min price.')
+            if tran.priceT > goo.maxG:
+                raise ValidationError(str(tran.buyerT.codename) + ' ' + str(tran.goods.nameG) +
+                                      ': Transaction Price is higher than max price.')
+
         # order verification:
         for good in by_goods.keys():
             for buyer in by_buyer.keys():
@@ -103,6 +113,19 @@ class BaseSalesAFormset(BaseModelFormSet):
             if tran.quanT > order.quanO:
                 raise ValidationError(str(tran.buyerT.codename) + ' ' + str(tran.goods.nameG) +
                                       ': Transaction is greater than order')
+
+            for form in self.forms:
+                tran = form.instance
+                goo = Goods.objects.get(nameG=tran.goods)
+                if tran.priceT < goo.minG:
+                    raise ValidationError(str(tran.buyerT.codename) + ' ' + str(tran.goods.nameG) +
+                                          ': Transaction Price is lower than min price.')
+                if tran.priceT > goo.maxG:
+                    raise ValidationError(str(tran.buyerT.codename) + ' ' + str(tran.goods.nameG) +
+                                          ': Transaction Price is higher than max price.')
+
+
+
 
 
 class BaseSalesLFormset(BaseModelFormSet):
