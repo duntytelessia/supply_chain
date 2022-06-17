@@ -1,0 +1,57 @@
+{% extends 'data/base_generic.html' %}
+{% load custom_tags %}
+{% block content %}
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h1> Control Tower Interface</h1>
+
+<h2> KPIs :</h2>
+
+<h4> KPI1 </h4>: ratio transaction sold on order recieved
+<h4> KPI2 </h4>: ratio transaction sold on stock available
+<h4> KPI3 </h4>: ratio profits on costs
+
+
+<h3> Week {{ week.week }}</h3>
+
+<table>
+    <tr>
+        <td></td>
+        <td> KPI1 </td>
+        <td> KPI2 </td>
+        <td> KPI3 </td>
+    </tr>
+    {% for user in users %}
+    <tr>
+        <td> {{ user.codename }}</td>
+        <td>
+            {% with a=user.codename|add:'KPI1' %}
+                {% with n=dict_kpi|keyvalue:a %}
+                    {{ n }}
+                {% endwith %}
+            {% endwith %}
+        </td>
+        <td>
+            {% with a=user.codename|add:'KPI2' %}
+                {% with n=dict_kpi|keyvalue:a %}
+                    {{ n }}
+                {% endwith %}
+            {% endwith %}
+        </td>
+        <td>
+            {% with a=user.codename|add:'KPI3' %}
+                {% with n=dict_kpi|keyvalue:a %}
+                    {{ n }}
+                {% endwith %}
+            {% endwith %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

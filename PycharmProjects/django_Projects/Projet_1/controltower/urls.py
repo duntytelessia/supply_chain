@@ -10,5 +10,8 @@ urlpatterns = [
     path('validate_all', validate_all, name='validate_all'),
     path('begin_simulation', begin_simulation, name='begin_simulation'),
     path('new_week', new_week, name='new_week'),
-    path('costs', costs, name='costs')
+    path('costs', costs, name='costs'),
+    path('kpi', kpi, name='kpi'),
+    path('confirmation', confirmation, name='confirmation'),
+    path('delete', delete, name='delete'),
 ]

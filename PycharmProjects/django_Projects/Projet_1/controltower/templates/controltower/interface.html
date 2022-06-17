@@ -40,58 +40,6 @@
         </tr>
     {% endfor %}
     </table>
-
-</p>
-------------------------Order------------------------
-    <table>
-        <tr>
-            <td>  id  </td>
-            <td>  seller  </td>
-            <td>  buyer  </td>
-            <td>  goods  </td>
-            <td>  quan  </td>
-            <td>  date  </td>
-        {% for o in oo %}
-        </tr>
-        <tr>
-            <td> {{ o.idO }} </td>
-            <td> {{ o.sellerO }} </td>
-            <td> {{ o.buyerO }} </td>
-            <td> {{ o.goodsO }} </td>
-            <td> {{ o.quanO }} </td>
-            <td> {{ o.dateO }} </td>
-        </tr>
-    {% endfor %}
-    </table>
-
-</p>
-------------------------Transaction------------------------
-    <table>
-        <tr>
-            <td>  id  </td>
-            <td>  seller  </td>
-            <td>  buyer  </td>
-            <td>  goods  </td>
-            <td>  quan  </td>
-            <td>  date  </td>
-            <td>  price  </td>
-            <td>  verified  </td>
-        {% for t in tt %}
-        </tr>
-        <tr>
-            <td> {{ t.idT }} </td>
-            <td> {{ t.sellerT }} </td>
-            <td> {{ t.buyerT }} </td>
-            <td> {{ t.goodsT }} </td>
-            <td> {{ t.quanT }} </td>
-            <td> {{ t.dateT }} </td>
-            <td> {{ t.priceT }} </td>
-            <td> {{ t.verifiedT }} </td>
-        </tr>
-    {% endfor %}
-    </table>
-
-</p>
 {% if has_begun %}
 ------------------------Worker------------------------
     <form method="post" >
@@ -107,17 +55,23 @@
 
 <h4> <a href="costs"> Change fixed costs </a></h4>
 {% endif %}
+{% if not first_week %}
+    <h4> <a href="kpi"> See KPI </a></h4>
+{% endif %}
 {% if can_begin %}  <!-- if everyone has validated -->
-<form action='valid' method='GET'>
-<button type='submit'> Begin </button>
-</form>
+    <form action='valid' method='GET'>
+    <button type='submit'> Begin </button>
+    </form>
 
 {% else %}
-{% if has_begun %}
-To go to the next week, you need all accounts in the simulation to be ready.
-{% else %}
-To begin the simulation, you need all registered accounts to which you assigned a group to be ready.
+    {% if has_begun %}
+        To go to the next week, you need all accounts in the simulation to be ready.
+    {% else %}
+        To begin the simulation, you need all registered accounts to which you assigned a group to be ready.
+    {% endif %}
+    <a href="validate_all"> Validate all </a>
 {% endif %}
-<a href="validate_all"> Validate all </a>
-{% endif %}
+
+----------------
+<h6> <a href="confirmation"> Stop Simulation and delete all data </a></h6>
 {% endblock %}

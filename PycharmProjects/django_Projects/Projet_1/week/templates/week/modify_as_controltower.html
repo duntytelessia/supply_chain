@@ -4,8 +4,18 @@
 {% block content %}
 <h1> Control Tower Interface</h1>
 <h2> Week {{ week }} </h2>
+
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if not first_week %}
     <form method="post">
         {{ formset_a.management_form }}
+        {{ formset_a.non_form_errors }}
         {% csrf_token %}
         <table>
             <tr>
@@ -19,6 +29,9 @@
                 <td> {{user.codename}} </td>
                 {% for good in goods_a %}
                 <td> {% with a=user.codename|add:good.idG %}
+                        {% with b=dict_info_a|keyvalue:a %}
+                            Order: {{ b.quanO }}
+                        {% endwith %}
                         {% with b=dict_a|keyvalue:a %}
                             {{ b.as_p }}
                         {% endwith %}
@@ -35,6 +48,7 @@
 
     <form method="post">
         {{ formset_b.management_form }}
+        {{ formset_b.non_form_errors }}
         {% csrf_token %}
         <table>
             <tr>
@@ -48,6 +62,9 @@
                 <td> {{user.codename}} </td>
                 {% for good in goods_b %}
                 <td> {% with c=user.codename|add:good.idG %}
+                        {% with d=dict_info_b|keyvalue:c %}
+                            Order: {{ d.quanO }}
+                        {% endwith %}
                         {% with d=dict_b|keyvalue:c %}
                             {{ d.as_p }}
                         {% endwith %}
@@ -61,6 +78,7 @@
         <input type="submit" name="submitB" value="Edit">
     </form>
 -----------------------------------------------------------
+{% endif %}
 <form method="post">
         {{ formset_a1.management_form }}
         {% csrf_token %}

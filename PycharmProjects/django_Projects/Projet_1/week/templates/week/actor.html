@@ -6,7 +6,7 @@
 <h2> Week {{ week }} </h2>
 <h3> {{ user.username }}</h3>
 <h4> Codename : {{ user.codename }} </h4> <h4> Role : {{group}} </h4>
-<h5> Funds : {{ user_info.funds }}</h5>
+<h5> Funds : {{ info_user.funds }}</h5>
 
 {% if messages %}
 <ul>
@@ -149,7 +149,6 @@
     </form>
 {% endif %}
 --------------------------------------------------------------------------
-{% if not supp %}
 {% if fact %}
 <h3> Order </h3>
 <form method="post">
@@ -237,7 +236,6 @@
     </form>
 {% endif %}
 --------------------------------------------------------------------------
-{% endif %}
 {% if not first_week %}
 
 <h3> Sell </h3>
@@ -316,6 +314,14 @@
 {% if not ware %}
 {% if not dist %}
 <h3> Part-time workers </h3>
+
+<h4> Stock next week </h4>
+<ul>
+    {% for calcul in calculation %}
+    <li> {{ calcul }}</li>
+    {% endfor %}
+</ul>
+
 <table>
         <tr>
             <td> New Capacity </td>

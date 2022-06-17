@@ -56,13 +56,16 @@ def modify_as_controltower(request, week):
     goods_b = Goods.objects.filter(idG__in=['R2', 'R4'])
     seller = request.user
     week = Week.objects.get(week__exact=week)
+    first_week = (week.week == 1)
     list_a = []
     dict_a = {}
     keys_a = []
+    dict_info_a = {}
 
     list_b = []
     dict_b = {}
     keys_b = []
+    dict_info_b = {}
 
     distributors = User.objects.filter(groups__name__exact='Distributors')
     goods_a1 = Goods.objects.filter(idG__in=['F1', 'F2'])
@@ -82,6 +85,8 @@ def modify_as_controltower(request, week):
     for buyer in suppliers_a:
         for good in goods_a:
             id = seller.codename + buyer.codename + good.idG + str(week.week)
+            id_order = seller.codename + buyer.codename + good.idG + str(week.week - 1)
+            order_exists = Order.objects.filter(idO__exact=id_order).exists()
             if Transaction.objects.filter(idT__exact=id).exists():
                 tran = Transaction.objects.get(idT__exact=id)
             else:
@@ -89,10 +94,17 @@ def modify_as_controltower(request, week):
             tran.save()
             list_a.append(id)
             keys_a.append(buyer.codename + good.idG)
+            if order_exists:
+                order = Order.objects.get(idO__exact=id_order)
+                dict_info_a.update({buyer.codename + good.idG: order})
+            else:
+                dict_info_a.update({buyer.codename + good.idG: None})
 
     for buyer in suppliers_b:
         for good in goods_b:
             id = seller.codename + buyer.codename + good.idG + str(week.week)
+            id_order = seller.codename + buyer.codename + good.idG + str(week.week - 1)
+            order_exists = Order.objects.filter(idO__exact=id_order).exists()
             if Transaction.objects.filter(idT__exact=id).exists():
                 tran = Transaction.objects.get(idT__exact=id)
             else:
@@ -100,6 +112,11 @@ def modify_as_controltower(request, week):
             tran.save()
             list_b.append(id)
             keys_b.append(buyer.codename + good.idG)
+            if order_exists:
+                order = Order.objects.get(idO__exact=id_order)
+                dict_info_b.update({buyer.codename + good.idG: order})
+            else:
+                dict_info_b.update({buyer.codename + good.idG: None})
 
     for seller in distributors:
         for good in goods_a1:
@@ -114,11 +131,14 @@ def modify_as_controltower(request, week):
 
 
     # form creation
-    TransactionFormSet = modelformset_factory(Transaction, fields=['quanT', 'priceT'],
+    TransactionFormSet = modelformset_factory(Transaction, formset=BaseSalesAFormset, fields=['quanT', 'priceT'],
                                               labels={'quanT': 'Q', 'priceT': 'P'}, extra=0)
     OrderFormSet = modelformset_factory(Order, fields=['quanO'],
-                                              labels={'quanO': 'Q'}, extra=0)
+                                        labels={'quanO': 'Q'}, extra=0)
 
+    formset_a = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_a))
+    formset_b = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_b))
+    formset_a1 = OrderFormSet(queryset=Order.objects.filter(idO__in=list_a1))
     if request.method == 'POST':
         if 'submitA' in request.POST:
             formset_a = TransactionFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=list_a))
@@ -139,9 +159,6 @@ def modify_as_controltower(request, week):
                 messages.success(request, 'Order edited')
                 return HttpResponseRedirect(request.path_info)
 
-    formset_a = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_a))
-    formset_b = TransactionFormSet(queryset=Transaction.objects.filter(idT__in=list_b))
-    formset_a1 = OrderFormSet(queryset=Order.objects.filter(idO__in=list_a1))
     context = {
         'suppliers_a': suppliers_a,
         'suppliers_b': suppliers_b,
@@ -150,10 +167,12 @@ def modify_as_controltower(request, week):
         'week': str(week),
         'dict_a': dict_a,
         'dict_b': dict_b,
-        'messages': messages,
         'distributors': distributors,
         'goods_a1': goods_a1,
         'dict_a1': dict_a1,
+        'dict_info_a': dict_info_a,
+        'dict_info_b': dict_info_b,
+        'first_week': first_week,
     }
     formlayout(formset_a, keys_a, dict_a)
     context.update({'formset_a': formset_a})
@@ -198,7 +217,7 @@ def actorL(request, week, username):
         ids_paths, ids_sales = [], []
         keys_paths, keys_sales = [], []
         dict_paths, dict_sales = {}, {}
-        dict_info_paths, dict_info_sales = {}, {}
+        dict_info_paths, dict_info_sales, dict_info_stock = {}, {}, {}
 
         def formlayout(formset, keys, dict):
             i = 0
@@ -217,12 +236,15 @@ def actorL(request, week, username):
                 if path.chosenP:
                     for good in goods_sales:
                         # transactions
+                        id_s = seller.codename + good.idG + str(week.week)
                         id_t = seller.codename + buyer.codename + good.idG + str(week.week)
                         id_o = seller.codename + buyer.codename + good.idG + str(week.week - 1)
                         tran_exists = Transaction.objects.filter(idT=id_t).exists()
                         order_exists = Order.objects.filter(idO=id_o).exists()
                         if tran_exists and order_exists:
                             order = Order.objects.get(idO__exact=id_o)
+                            stock = Stock.objects.get(idS__exact=id_s)
+                            dict_info_stock.update({seller.codename + buyer.codename + good.idG: stock})
                             dict_info_sales.update({seller.codename + buyer.codename + good.idG: order})
                             ids_sales.append(id_t)
                             keys_sales.append(seller.codename + buyer.codename + good.idG)
@@ -295,6 +317,7 @@ def actorL(request, week, username):
             'seller_sales': seller_sales,
             'dict_sales': dict_sales,
             'dict_info_sales': dict_info_sales,
+            'dict_info_stock': dict_info_stock,
             'formset_sales': formset_sales,
             'keys_sales': keys_sales,
             'dict_paths': dict_paths,
@@ -343,7 +366,7 @@ def actor(request, week, username):
     if group.name == 'Suppliers_A':
         goods_stock = Goods.objects.filter(idG__in=['R1', 'R3', 'P1', 'P3'])
         goods_buy = Goods.objects.filter(idG__in=['R1', 'R3'])
-        seller_buy = User.objects.filter(username__exact='admin')
+        seller_buy = User.objects.filter(username__exact='admin')      # pas très robuste, /!\ ne pas changer le nom de l'admin
         buyer_buy = request.user
         goods_sales = Goods.objects.filter(idG__in=['P1', 'P3'])
         seller_sales = request.user
@@ -492,7 +515,7 @@ def actor(request, week, username):
                 keys_order_2.append(seller.codename + good.idG)
         ids_order = ids_order_1 + ids_order_2
         keys_order = keys_order_1 + keys_order_2
-    elif group.name != 'Suppliers_A' or group.name != 'Suppliers_B':
+    else:
         for seller in seller_buy:
             for good in goods_buy:
                 id = seller.codename + buyer_buy.codename + good.idG + str(week.week)
@@ -640,6 +663,11 @@ def actor(request, week, username):
             formset_sales = SalesFormSet(request.POST, queryset=Transaction.objects.filter(idT__in=ids_sales))
             if formset_sales.is_valid():
                 formset_sales.save()
+                if group.name == 'Distributors':
+                    for f in formset_sales:
+                        tran = f.instance
+                        tran.verifiedT = True
+                        tran.save()
                 messages.success(request, 'Sales edited')
                 return HttpResponseRedirect(request.path_info)
             else:
@@ -682,6 +710,7 @@ def actor(request, week, username):
                 f_w.save()
                 messages.success(request, 'Worker number info changed')
                 return HttpResponseRedirect(request.path_info)
+
         if 'submitI' in request.POST:
             i_u = ChangeInfoUser(request.POST, instance=info_user)
             if i_u.is_valid():
@@ -689,7 +718,7 @@ def actor(request, week, username):
                 messages.success(request, 'User Info Changed')
                 return HttpResponseRedirect(request.path_info)
     else:
-        f_w = WorkerForm(instance=CustomUser.objects.get(username__exact=username))
+        f_w = WorkerForm(instance=info_user)
 
     # form layout
     formlayout(formset_stock, keys_stock, dict_stock)
@@ -764,7 +793,51 @@ def actor(request, week, username):
         context['formset_buy'] = formset_buy
         context['formset_order'] = formset_order
 
+    calculation = []
+    # calculation new raw stock.
+    if group.name in ['Suppliers_A', 'Suppliers_B']:
+        for good in goods_buy:
+            new_stock = 0
+            stock = Stock.objects.get(idU=user, goods=good, dateS=week)
+            new_stock += stock.quanS
+            tran = Transaction.objects.filter(buyerT=user, goods=good, dateT=week, verifiedT=True)
+            for t in tran:
+                new_stock += t.quanT
+            if new_stock < cap:
+                new_stock = 0
+            else:
+                new_stock -= cap
+            calculation.append(good.nameG + ' ' + str(new_stock))
+        context.update({'calculation': calculation})
+    elif group.name == 'Factories':
+        for good in goods_buy_1:
+            new_stock = 0
+            stock = Stock.objects.get(idU=user, goods=good, dateS=week)
+            new_stock += stock.quanS
+            tran = Transaction.objects.filter(buyerT=user, goods=good, dateT=week, verifiedT=True)
+            for t in tran:
+                new_stock += t.quanT
+            if new_stock < cap:
+                new_stock = 0
+            else:
+                new_stock -= cap
+            calculation.append(good.nameG + ' ' + str(new_stock))
+        for good in goods_buy_2:
+            new_stock = 0
+            stock = Stock.objects.get(idU=user, goods=good, dateS=week)
+            new_stock += stock.quanS
+            tran = Transaction.objects.filter(buyerT=user, goods=good, dateT=week, verifiedT=True)
+            for t in tran:
+                new_stock += t.quanT
+            if new_stock < cap:
+                new_stock = 0
+            else:
+                new_stock -= cap
+            calculation.append(good.nameG + ' ' + str(new_stock))
+        context.update({'calculation': calculation})
+
     return render(request, 'week/actor.html', context=context)
+
 
 def notallowed(request):
     return render(request, 'week/notallowed.html')
