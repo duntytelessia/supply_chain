@@ -9,4 +9,5 @@ urlpatterns = [
     path('<int:week>/controltower/view', view_as_controltower, name='view_as_controltower'),
     path('<int:week>/<str:username>', actor, name='actor'),
     path('<int:week>/<str:username>/L', actorL, name='actorL'),
+
 ]
